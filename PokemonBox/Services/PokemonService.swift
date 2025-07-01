@@ -9,6 +9,23 @@ class PokemonService {
         self.session = session
     }
 
+    func fetchPokemonPage(limit: Int = 20, offset: Int = 0) async throws -> PokemonPage {
+        let listURL = baseURL
+            .appendingPathComponent("pokemon")
+            .appending(queryItems: [
+                URLQueryItem(name: "limit", value: String(limit)),
+                URLQueryItem(name: "offset", value: String(offset))
+            ])
+        let (data, _) = try await session.data(from: listURL)
+        let list = try JSONDecoder().decode(PokemonListResponse.self, from: data)
+        var result: [Pokemon] = []
+        for item in list.results {
+            let pokemon = try await fetchPokemon(named: item.name)
+            result.append(pokemon)
+        }
+        return PokemonPage(totalCount: list.count, items: result)
+    }
+
     func fetchAllPokemon(limit: Int = 2000) async throws -> [Pokemon] {
         let listURL = baseURL.appendingPathComponent("pokemon").appending(queryItems: [URLQueryItem(name: "limit", value: String(limit))])
         let (data, _) = try await session.data(from: listURL)

@@ -10,6 +10,9 @@ import UIKit
 class ViewController: UIViewController {
 
     private var pokemons: [Pokemon] = []
+    private var totalCount: Int?
+    private var isLoading = false
+    private let pageSize = 20
     private let tableView = UITableView()
     private let refreshControl = UIRefreshControl()
     private let searchController = UISearchController(searchResultsController: nil)
@@ -58,24 +61,40 @@ class ViewController: UIViewController {
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
         ])
 
-        loadPokemons()
+        loadNextPage(reset: true)
     }
 
     @objc private func refreshPokemons() {
-        loadPokemons()
+        loadNextPage(reset: true)
     }
 
-    private func loadPokemons() {
+    private func loadNextPage(reset: Bool = false) {
+        guard !isLoading else { return }
+        isLoading = true
+        if reset {
+            totalCount = nil
+            pokemons.removeAll()
+            tableView.reloadData()
+        }
         Task {
-            refreshControl.beginRefreshing()
+            if reset {
+                refreshControl.beginRefreshing()
+            }
             do {
                 let service = PokemonService()
-                pokemons = try await service.fetchAllPokemon(limit: 20)
+                let page = try await service.fetchPokemonPage(limit: pageSize, offset: pokemons.count)
+                if totalCount == nil {
+                    totalCount = page.totalCount
+                }
+                pokemons += page.items
                 tableView.reloadData()
             } catch {
                 print("Failed to fetch pokemons: \(error)")
             }
-            refreshControl.endRefreshing()
+            isLoading = false
+            if reset {
+                refreshControl.endRefreshing()
+            }
         }
     }
 }
@@ -105,6 +124,18 @@ extension ViewController: UITableViewDelegate {
         let view = UIView()
         view.backgroundColor = .clear
         return view
+    }
+
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        if indexPath.section == pokemons.count - 1 {
+            if let total = totalCount {
+                if pokemons.count < total {
+                    loadNextPage()
+                }
+            } else {
+                loadNextPage()
+            }
+        }
     }
 }
 

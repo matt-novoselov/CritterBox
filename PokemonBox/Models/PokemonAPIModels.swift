@@ -16,6 +16,9 @@ struct PokemonListResponse: Codable {
         let name: String
         let url: URL
     }
+    let count: Int
+    let next: URL?
+    let previous: URL?
     let results: [Result]
 }
 
@@ -46,4 +49,9 @@ struct PokemonSpeciesResponse: Codable {
         let language: NamedAPIResource
     }
     let flavor_text_entries: [FlavorTextEntry]
+}
+
+struct PokemonPage {
+    let totalCount: Int
+    let items: [Pokemon]
 }
