@@ -7,9 +7,8 @@ list of Pokémon and returns their main details:
 
 - `name`
 - `flavorText`
-- `eggGroups`
 - `types`
-- `shinyArtworkURL`
+- `artworkURL`
 
 When the app launches, the main view controller fetches a small set of Pokémon
 using `PokemonService` and prints the results with `dump`.
