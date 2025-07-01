@@ -36,7 +36,7 @@ class PokemonService {
             .replacingOccurrences(of: "\u{000c}", with: " ")
         if var text = flavor {
             let sentences = text.split(separator: ".", omittingEmptySubsequences: true)
-            if sentences.count > 2, let first = sentences.first {
+            if sentences.count > 1, let first = sentences.first {
                 text = first.trimmingCharacters(in: .whitespaces) + "."
             }
             flavor = text
