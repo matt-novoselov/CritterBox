@@ -29,6 +29,9 @@ class ViewController: UIViewController {
         tableView.register(PokemonCell.self, forCellReuseIdentifier: PokemonCell.reuseIdentifier)
         tableView.refreshControl = refreshControl
         tableView.allowsSelection = false
+        tableView.showsVerticalScrollIndicator = false
+        tableView.tableHeaderView = UIView(frame: .zero)
+        tableView.tableFooterView = UIView(frame: .zero)
         refreshControl.addTarget(self, action: #selector(refreshPokemons), for: .valueChanged)
         tableView.contentInset.top = 8
         tableView.contentInset.bottom = 8
