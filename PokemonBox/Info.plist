@@ -24,5 +24,9 @@
 			</array>
 		</dict>
 	</dict>
+	<key>UIAppFonts</key>
+	<array>
+		<string>BricolageGrotesque-VariableFont_opsz,wdth,wght.ttf</string>
+	</array>
 </dict>
 </plist>

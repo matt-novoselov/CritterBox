@@ -16,6 +16,7 @@ class ViewController: UIViewController {
         let label = UILabel()
         label.text = "Hello World"
         label.textAlignment = .center
+        label.font = .bricolageGrotesque(ofSize: 32, weight: .bold)
         label.translatesAutoresizingMaskIntoConstraints = false
 
         view.addSubview(label)
