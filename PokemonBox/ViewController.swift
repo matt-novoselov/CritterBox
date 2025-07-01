@@ -9,33 +9,59 @@ import UIKit
 
 class ViewController: UIViewController {
 
+    private var pokemons: [Pokemon] = []
+    private let tableView = UITableView()
+    private let refreshControl = UIRefreshControl()
+
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
 
-        let label = UILabel()
-        label.text = "Hello World"
-        label.textAlignment = .center
-        label.translatesAutoresizingMaskIntoConstraints = false
+        tableView.translatesAutoresizingMaskIntoConstraints = false
+        tableView.dataSource = self
+        tableView.register(PokemonCell.self, forCellReuseIdentifier: PokemonCell.reuseIdentifier)
+        tableView.refreshControl = refreshControl
+        refreshControl.addTarget(self, action: #selector(refreshPokemons), for: .valueChanged)
 
-        view.addSubview(label)
-
+        view.addSubview(tableView)
         NSLayoutConstraint.activate([
-            label.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            label.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+            tableView.topAnchor.constraint(equalTo: view.topAnchor),
+            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
         ])
+
+        loadPokemons()
     }
 
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
+    @objc private func refreshPokemons() {
+        loadPokemons()
+    }
+
+    private func loadPokemons() {
         Task {
+            refreshControl.beginRefreshing()
             do {
                 let service = PokemonService()
-                let pokemons = try await service.fetchAllPokemon(limit: 20)
-                dump(pokemons)
+                pokemons = try await service.fetchAllPokemon(limit: 20)
+                tableView.reloadData()
             } catch {
                 print("Failed to fetch pokemons: \(error)")
             }
+            refreshControl.endRefreshing()
         }
     }
 }
+
+extension ViewController: UITableViewDataSource {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return pokemons.count
+    }
+
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: PokemonCell.reuseIdentifier, for: indexPath) as! PokemonCell
+        cell.configure(with: pokemons[indexPath.row])
+        return cell
+    }
+}
+
