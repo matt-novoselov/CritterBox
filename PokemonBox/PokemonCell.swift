@@ -4,6 +4,7 @@ class PokemonCell: UITableViewCell {
     static let reuseIdentifier = "PokemonCell"
 
     private let artworkImageView = UIImageView()
+    private let spinner = UIActivityIndicatorView(style: .medium)
     private let nameLabel = UILabel()
     private let typesStackView = UIStackView()
     private let flavorLabel = UILabel()
@@ -15,9 +16,12 @@ class PokemonCell: UITableViewCell {
 
         artworkImageView.translatesAutoresizingMaskIntoConstraints = false
         artworkImageView.contentMode = .scaleAspectFit
+        spinner.translatesAutoresizingMaskIntoConstraints = false
+        spinner.hidesWhenStopped = true
 
         nameLabel.translatesAutoresizingMaskIntoConstraints = false
-        nameLabel.font = .preferredFont(forTextStyle: .headline)
+        let headline = UIFont.preferredFont(forTextStyle: .headline)
+        nameLabel.font = .boldSystemFont(ofSize: headline.pointSize)
 
         typesStackView.translatesAutoresizingMaskIntoConstraints = false
         typesStackView.axis = .horizontal
@@ -25,9 +29,12 @@ class PokemonCell: UITableViewCell {
 
         flavorLabel.translatesAutoresizingMaskIntoConstraints = false
         flavorLabel.font = .preferredFont(forTextStyle: .body)
+        flavorLabel.textColor = .secondaryLabel
         flavorLabel.numberOfLines = 0
 
         contentView.addSubview(artworkImageView)
+        artworkImageView.addSubview(spinner)
+        spinner.startAnimating()
         contentView.addSubview(nameLabel)
         contentView.addSubview(typesStackView)
         contentView.addSubview(flavorLabel)
@@ -37,6 +44,8 @@ class PokemonCell: UITableViewCell {
             artworkImageView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
             artworkImageView.widthAnchor.constraint(equalToConstant: 96),
             artworkImageView.heightAnchor.constraint(equalToConstant: 96),
+            spinner.centerXAnchor.constraint(equalTo: artworkImageView.centerXAnchor),
+            spinner.centerYAnchor.constraint(equalTo: artworkImageView.centerYAnchor),
 
             nameLabel.leadingAnchor.constraint(equalTo: artworkImageView.trailingAnchor, constant: 8),
             nameLabel.topAnchor.constraint(equalTo: artworkImageView.topAnchor),
@@ -61,6 +70,7 @@ class PokemonCell: UITableViewCell {
         super.prepareForReuse()
         task?.cancel()
         artworkImageView.image = nil
+        spinner.startAnimating()
     }
 
     func configure(with pokemon: Pokemon) {
@@ -77,16 +87,21 @@ class PokemonCell: UITableViewCell {
         }
         flavorLabel.text = pokemon.flavorText
         if let url = pokemon.artworkURL {
+            spinner.startAnimating()
             task = Task {
                 do {
                     let (data, _) = try await URLSession.shared.data(from: url)
                     if !Task.isCancelled {
                         artworkImageView.image = UIImage(data: data)
+                        spinner.stopAnimating()
                     }
                 } catch {
                     // ignore loading errors
+                    spinner.stopAnimating()
                 }
             }
+        } else {
+            spinner.stopAnimating()
         }
     }
 }
