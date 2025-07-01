@@ -12,10 +12,16 @@ class ViewController: UIViewController {
     private var pokemons: [Pokemon] = []
     private let tableView = UITableView()
     private let refreshControl = UIRefreshControl()
+    private let searchController = UISearchController(searchResultsController: nil)
 
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
+
+        navigationItem.title = "PokemonBox"
+        searchController.searchBar.placeholder = "Search name or type"
+        navigationItem.searchController = searchController
+        navigationItem.hidesSearchBarWhenScrolling = false
 
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.dataSource = self
