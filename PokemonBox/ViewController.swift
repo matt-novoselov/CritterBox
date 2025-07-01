@@ -25,4 +25,17 @@ class ViewController: UIViewController {
             label.centerYAnchor.constraint(equalTo: view.centerYAnchor)
         ])
     }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        Task {
+            do {
+                let service = PokemonService()
+                let pokemons = try await service.fetchAllPokemon(limit: 20)
+                dump(pokemons)
+            } catch {
+                print("Failed to fetch pokemons: \(error)")
+            }
+        }
+    }
 }
