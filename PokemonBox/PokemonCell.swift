@@ -79,7 +79,8 @@ class PokemonCell: UITableViewCell {
         for type in pokemon.types {
             let label = PaddingLabel()
             label.text = type.capitalized
-            label.font = .preferredFont(forTextStyle: .caption1)
+            let base = UIFont.preferredFont(forTextStyle: .caption1)
+            label.font = .systemFont(ofSize: base.pointSize + 2, weight: .medium)
             label.backgroundColor = .systemGray5
             label.layer.cornerRadius = 4
             label.layer.masksToBounds = true
