@@ -19,9 +19,20 @@ class ViewController: UIViewController {
         view.backgroundColor = .systemBackground
 
         navigationItem.title = "PokemonBox"
-        navigationController?.navigationBar.titleTextAttributes = [
-            .font: UIFont.bricolageGrotesque(ofSize: 26, weight: .bold)
-        ]
+
+        // Custom title with mixed font weights
+        let pokemonLabel = UILabel()
+        pokemonLabel.text = "Pokemon"
+        pokemonLabel.font = UIFont.bricolageGrotesque(ofSize: 26, weight: .regular)
+        let boxLabel = UILabel()
+        boxLabel.text = "Box"
+        boxLabel.font = UIFont.bricolageGrotesque(ofSize: 26, weight: .bold)
+
+        let titleStack = UIStackView(arrangedSubviews: [pokemonLabel, boxLabel])
+        titleStack.axis = .horizontal
+        titleStack.spacing = 0
+        titleStack.alignment = .center
+        navigationItem.titleView = titleStack
         searchController.searchBar.placeholder = "Search name or type"
         navigationItem.searchController = searchController
         navigationItem.hidesSearchBarWhenScrolling = false
@@ -36,13 +47,13 @@ class ViewController: UIViewController {
         tableView.tableHeaderView = UIView(frame: .zero)
         tableView.tableFooterView = UIView(frame: .zero)
         refreshControl.addTarget(self, action: #selector(refreshPokemons), for: .valueChanged)
-        tableView.contentInset.top = 8
-        tableView.contentInset.bottom = 8
+        tableView.contentInset.top = 16
+        tableView.contentInset.bottom = 16
         
         view.addSubview(tableView)
         NSLayoutConstraint.activate([
-            tableView.topAnchor.constraint(equalTo: view.topAnchor),
-            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
+            tableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
         ])
