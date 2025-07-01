@@ -23,14 +23,6 @@ class ViewController: UIViewController {
         navigationItem.searchController = searchController
         navigationItem.hidesSearchBarWhenScrolling = false
 
-        let label = UILabel()
-        label.text = "Hello World"
-        label.textAlignment = .center
-        label.font = .bricolageGrotesque(ofSize: 32, weight: .bold)
-        label.translatesAutoresizingMaskIntoConstraints = false
-
-        view.addSubview(label)
-
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.dataSource = self
         tableView.delegate = self
