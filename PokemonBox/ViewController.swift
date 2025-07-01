@@ -28,9 +28,11 @@ class ViewController: UIViewController {
         tableView.delegate = self
         tableView.register(PokemonCell.self, forCellReuseIdentifier: PokemonCell.reuseIdentifier)
         tableView.refreshControl = refreshControl
+        tableView.allowsSelection = false
         refreshControl.addTarget(self, action: #selector(refreshPokemons), for: .valueChanged)
         tableView.contentInset.top = 8
-
+        tableView.contentInset.bottom = 8
+        
         view.addSubview(tableView)
         NSLayoutConstraint.activate([
             tableView.topAnchor.constraint(equalTo: view.topAnchor),
@@ -79,7 +81,7 @@ extension ViewController: UITableViewDataSource {
 
 extension ViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
-        return 8
+        return 16
     }
 
     func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {

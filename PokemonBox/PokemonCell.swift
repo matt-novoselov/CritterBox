@@ -32,6 +32,7 @@ class PokemonCell: UITableViewCell {
         flavorLabel.textColor = .secondaryLabel
         flavorLabel.numberOfLines = 0
 
+        selectionStyle = .none
         contentView.addSubview(artworkImageView)
         artworkImageView.addSubview(spinner)
         spinner.startAnimating()
