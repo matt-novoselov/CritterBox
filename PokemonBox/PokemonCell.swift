@@ -82,7 +82,7 @@ class PokemonCell: UITableViewCell {
             label.text = type.capitalized
             let base = UIFont.preferredFont(forTextStyle: .caption1)
             label.font = .boldSystemFont(ofSize: base.pointSize + 2)
-            label.textColor = .tertiaryLabel
+            label.textColor = .secondaryLabel
             label.backgroundColor = .systemGray5
             label.layer.cornerRadius = 4
             label.layer.masksToBounds = true
