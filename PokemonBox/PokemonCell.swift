@@ -21,7 +21,7 @@ class PokemonCell: UITableViewCell {
 
         nameLabel.translatesAutoresizingMaskIntoConstraints = false
         let headline = UIFont.preferredFont(forTextStyle: .headline)
-        nameLabel.font = .boldSystemFont(ofSize: headline.pointSize)
+        nameLabel.font = UIFont.bricolageGrotesque(ofSize: headline.pointSize, weight: .bold)
 
         typesStackView.translatesAutoresizingMaskIntoConstraints = false
         typesStackView.axis = .horizontal
