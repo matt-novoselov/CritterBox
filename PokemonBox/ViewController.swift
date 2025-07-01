@@ -19,6 +19,9 @@ class ViewController: UIViewController {
         view.backgroundColor = .systemBackground
 
         navigationItem.title = "PokemonBox"
+        navigationController?.navigationBar.titleTextAttributes = [
+            .font: UIFont.bricolageGrotesque(ofSize: 26, weight: .bold)
+        ]
         searchController.searchBar.placeholder = "Search name or type"
         navigationItem.searchController = searchController
         navigationItem.hidesSearchBarWhenScrolling = false
