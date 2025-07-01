@@ -42,8 +42,8 @@ class PokemonCell: UITableViewCell {
         NSLayoutConstraint.activate([
             artworkImageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 8),
             artworkImageView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
-            artworkImageView.widthAnchor.constraint(equalToConstant: 96),
-            artworkImageView.heightAnchor.constraint(equalToConstant: 96),
+            artworkImageView.widthAnchor.constraint(equalToConstant: 72),
+            artworkImageView.heightAnchor.constraint(equalToConstant: 72),
             spinner.centerXAnchor.constraint(equalTo: artworkImageView.centerXAnchor),
             spinner.centerYAnchor.constraint(equalTo: artworkImageView.centerYAnchor),
 
