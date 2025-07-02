@@ -43,27 +43,8 @@ struct PokemonDetailResponse: Decodable {
                 let front_default: URL?
             }
             let officialArtwork: OfficialArtwork
-            enum CodingKeys: CodingKey {
-                case officialArtwork
-
-                init?(stringValue: String) {
-                    switch stringValue {
-                    case PokemonAPIConstants.Key.officialArtwork:
-                        self = .officialArtwork
-                    default:
-                        return nil
-                    }
-                }
-
-                var stringValue: String {
-                    switch self {
-                    case .officialArtwork:
-                        return PokemonAPIConstants.Key.officialArtwork
-                    }
-                }
-
-                init?(intValue: Int) { nil }
-                var intValue: Int? { nil }
+            enum CodingKeys: String, CodingKey {
+                case officialArtwork = "official-artwork"
             }
         }
         let other: Other

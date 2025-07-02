@@ -1,6 +1,6 @@
 import Foundation
 
-enum PokemonAPIConstants {
+enum APIConstants {
     static let baseURL = URL(string: "https://pokeapi.co/api/v2")!
 
     enum Path {
@@ -12,6 +12,7 @@ enum PokemonAPIConstants {
     enum Query {
         static let limit = "limit"
         static let offset = "offset"
+        static let limitValue = "100000"
     }
 
     enum Key {

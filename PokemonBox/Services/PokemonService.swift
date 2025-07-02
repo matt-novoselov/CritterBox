@@ -14,7 +14,7 @@ import Foundation
 class PokemonService {
     private let session: URLSession
     private let cache = NSCache<NSURL, NSData>()
-    private let baseURL = PokemonAPIConstants.baseURL
+    private let baseURL = APIConstants.baseURL
 
     init(session: URLSession = .shared) {
         self.session = session
@@ -22,10 +22,10 @@ class PokemonService {
 
     func fetchPokemonPage(limit: Int = 20, offset: Int = 0) async throws -> PokemonPage {
         let listURL = baseURL
-            .appendingPathComponent(PokemonAPIConstants.Path.pokemonSpecies)
+            .appendingPathComponent(APIConstants.Path.pokemonSpecies)
             .appending(queryItems: [
-                URLQueryItem(name: PokemonAPIConstants.Query.limit, value: String(limit)),
-                URLQueryItem(name: PokemonAPIConstants.Query.offset, value: String(offset))
+                URLQueryItem(name: APIConstants.Query.limit, value: String(limit)),
+                URLQueryItem(name: APIConstants.Query.offset, value: String(offset))
             ])
         let data = try await fetchData(from: listURL)
         let list = try JSONDecoder().decode(PokemonListResponse.self, from: data)
@@ -41,8 +41,8 @@ class PokemonService {
     /// - Returns: A set of Pokemon names.
     func fetchPokemonNameSet() async throws -> Set<String> {
         let listURL = baseURL
-            .appendingPathComponent(PokemonAPIConstants.Path.pokemonSpecies)
-            .appending(queryItems: [URLQueryItem(name: PokemonAPIConstants.Query.limit, value: "100_000")])
+            .appendingPathComponent(APIConstants.Path.pokemonSpecies)
+            .appending(queryItems: [URLQueryItem(name: APIConstants.Query.limit, value: APIConstants.Query.limit)])
         let data = try await fetchData(from: listURL)
         let list = try JSONDecoder().decode(PokemonListResponse.self, from: data)
         return Set(list.results.map { $0.name })
@@ -51,7 +51,7 @@ class PokemonService {
     /// Downloads all pokemon names grouped by type name.
     /// - Returns: A dictionary keyed by type name with an array of pokemon names.
     func fetchPokemonTypeMap() async throws -> [String: [String]] {
-        let typeListURL = baseURL.appendingPathComponent(PokemonAPIConstants.Path.type)
+        let typeListURL = baseURL.appendingPathComponent(APIConstants.Path.type)
         let data = try await fetchData(from: typeListURL)
         let list = try JSONDecoder().decode(PokemonTypeListResponse.self, from: data)
         var result: [String: [String]] = [:]
@@ -73,7 +73,7 @@ class PokemonService {
 
     func fetchPokemon(named name: String) async throws -> Pokemon {
         let detailURL = baseURL
-            .appendingPathComponent(PokemonAPIConstants.Path.pokemon)
+            .appendingPathComponent(APIConstants.Path.pokemon)
             .appendingPathComponent(name)
         let detailRaw = try await fetchData(from: detailURL)
         let detail = try JSONDecoder().decode(PokemonDetailResponse.self, from: detailRaw)
