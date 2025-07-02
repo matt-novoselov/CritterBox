@@ -62,3 +62,18 @@ struct PokemonPage {
     let totalCount: Int
     let items: [Pokemon]
 }
+
+struct PokemonTypeListResponse: Decodable {
+    struct Result: Decodable {
+        let name: String
+        let url: URL
+    }
+    let results: [Result]
+}
+
+struct PokemonTypeDetailResponse: Decodable {
+    struct PokemonEntry: Decodable {
+        let pokemon: NamedAPIResource
+    }
+    let pokemon: [PokemonEntry]
+}

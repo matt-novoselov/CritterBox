@@ -15,6 +15,7 @@ class MainPageViewController: UIViewController {
     private var totalCount: Int?
     private var isLoading = false
     private var pokemonNameMap = Set<String>()
+    private var pokemonTypeMap = [String: [String]]()
     private var filteredNames = [String]()
     private var searchOffset = 0
     private let tableView = UITableView()
@@ -75,9 +76,12 @@ class MainPageViewController: UIViewController {
         Task {
             do {
                 let service = PokemonService()
-                pokemonNameMap = try await service.fetchPokemonNameSet()
+                async let names = service.fetchPokemonNameSet()
+                async let types = service.fetchPokemonTypeMap()
+                pokemonNameMap = try await names
+                pokemonTypeMap = try await types
             } catch {
-                print("Failed to prefetch names: \(error)")
+                print("Failed to prefetch names or types: \(error)")
             }
         }
 
@@ -172,7 +176,11 @@ extension MainPageViewController: UISearchResultsUpdating {
             unavailableView.isHidden = true
             return
         }
-        filteredNames = pokemonNameMap.filter { $0.localizedCaseInsensitiveContains(text) }
+        if let names = pokemonTypeMap[text] {
+            filteredNames = names
+        } else {
+            filteredNames = pokemonNameMap.filter { $0.localizedCaseInsensitiveContains(text) }
+        }
         searchOffset = 0
         pokemons.removeAll()
         tableView.reloadData()
