@@ -21,6 +21,8 @@ class MainPageViewController: UIViewController {
     private let refreshControl = UIRefreshControl()
     private let searchController = UISearchController(searchResultsController: nil)
     private let unavailableView = UnavailableView()
+    private let loadingFooter = UIView()
+    private let loadingSpinner = UIActivityIndicatorView(style: .medium)
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -51,6 +53,14 @@ class MainPageViewController: UIViewController {
         tableView.allowsSelection = false
         tableView.showsVerticalScrollIndicator = false
         tableView.tableHeaderView = UIView(frame: .zero)
+        loadingSpinner.hidesWhenStopped = true
+        loadingSpinner.translatesAutoresizingMaskIntoConstraints = false
+        loadingFooter.addSubview(loadingSpinner)
+        NSLayoutConstraint.activate([
+            loadingSpinner.centerXAnchor.constraint(equalTo: loadingFooter.centerXAnchor),
+            loadingSpinner.centerYAnchor.constraint(equalTo: loadingFooter.centerYAnchor)
+        ])
+        loadingFooter.frame.size.height = 44
         tableView.tableFooterView = UIView(frame: .zero)
         refreshControl.addTarget(self, action: #selector(refreshPokemons), for: .valueChanged)
         
@@ -95,6 +105,8 @@ class MainPageViewController: UIViewController {
             totalCount = nil
             pokemons.removeAll()
             tableView.reloadData()
+        } else {
+            showLoadingFooter()
         }
         Task {
             if reset {
@@ -112,6 +124,7 @@ class MainPageViewController: UIViewController {
                 print("Failed to fetch pokemons: \(error)")
             }
             isLoading = false
+            hideLoadingFooter()
             if reset {
                 refreshControl.endRefreshing()
             }
@@ -196,6 +209,7 @@ private extension MainPageViewController {
     func loadNextSearchPage() {
         guard !isLoading, searchOffset < filteredNames.count else { return }
         isLoading = true
+        showLoadingFooter()
         let names = filteredNames[searchOffset..<min(searchOffset + pageSize, filteredNames.count)]
         searchOffset += names.count
         Task {
@@ -218,7 +232,19 @@ private extension MainPageViewController {
                 print("Failed to fetch search results: \(error) for \(names)")
             }
             isLoading = false
+            hideLoadingFooter()
         }
+    }
+
+    func showLoadingFooter() {
+        loadingFooter.frame.size.width = tableView.frame.width
+        tableView.tableFooterView = loadingFooter
+        loadingSpinner.startAnimating()
+    }
+
+    func hideLoadingFooter() {
+        loadingSpinner.stopAnimating()
+        tableView.tableFooterView = UIView(frame: .zero)
     }
 }
 
