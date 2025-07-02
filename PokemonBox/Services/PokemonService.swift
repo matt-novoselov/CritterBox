@@ -1,3 +1,10 @@
+//
+//  ViewController.swift
+//  PokemonBox
+//
+//  Created by Matt Novoselov on 01/07/25.
+//
+
 import Foundation
 
 
@@ -11,12 +18,12 @@ class PokemonService {
 
     func fetchPokemonPage(limit: Int = 20, offset: Int = 0) async throws -> PokemonPage {
         let listURL = baseURL
-            .appendingPathComponent("pokemon")
+            .appendingPathComponent("pokemon-species")
             .appending(queryItems: [
                 URLQueryItem(name: "limit", value: String(limit)),
                 URLQueryItem(name: "offset", value: String(offset))
             ])
-        let (data, _) = try await session.data(from: listURL)
+        let data = try await fetchData(from: listURL)
         let list = try JSONDecoder().decode(PokemonListResponse.self, from: data)
         var result: [Pokemon] = []
         for item in list.results {
@@ -26,13 +33,24 @@ class PokemonService {
         return PokemonPage(totalCount: list.count, items: result)
     }
 
-    private func fetchPokemon(named name: String) async throws -> Pokemon {
+    /// Downloads the list of all Pokemon names.
+    /// - Returns: A set of Pokemon names.
+    func fetchPokemonNameSet() async throws -> Set<String> {
+        let listURL = baseURL
+            .appendingPathComponent("pokemon-species")
+            .appending(queryItems: [URLQueryItem(name: "limit", value: "100_000")])
+        let data = try await fetchData(from: listURL)
+        let list = try JSONDecoder().decode(PokemonListResponse.self, from: data)
+        return Set(list.results.map { $0.name })
+    }
+
+    func fetchPokemon(named name: String) async throws -> Pokemon {
         let detailURL = baseURL.appendingPathComponent("pokemon").appendingPathComponent(name)
         let speciesURL = baseURL.appendingPathComponent("pokemon-species").appendingPathComponent(name)
-        async let detailData = session.data(from: detailURL)
-        async let speciesData = session.data(from: speciesURL)
-        let (detailRaw, _) = try await detailData
-        let (speciesRaw, _) = try await speciesData
+        async let detailData = fetchData(from: detailURL)
+        async let speciesData = fetchData(from: speciesURL)
+        let detailRaw = try await detailData
+        let speciesRaw = try await speciesData
         let detail = try JSONDecoder().decode(PokemonDetailResponse.self, from: detailRaw)
         let species = try JSONDecoder().decode(PokemonSpeciesResponse.self, from: speciesRaw)
         var flavor = species.flavor_text_entries.first { $0.language.name == "en" }?
@@ -49,6 +67,14 @@ class PokemonService {
         let types = detail.types.map { $0.type.name }
         let artwork = detail.sprites.other.officialArtwork.front_default
         return Pokemon(name: detail.name, flavorText: flavor, types: types, artworkURL: artwork)
+    }
+
+    private func fetchData(from url: URL) async throws -> Data {
+        let (data, response) = try await session.data(from: url)
+        guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
+            throw URLError(.badServerResponse)
+        }
+        return data
     }
 }
 

@@ -1,10 +1,17 @@
+//
+//  ViewController.swift
+//  PokemonBox
+//
+//  Created by Matt Novoselov on 01/07/25.
+//
+
 import UIKit
 
 class PokemonCell: UITableViewCell {
     static let reuseIdentifier = "PokemonCell"
 
     private let artworkImageView = UIImageView()
-    private let spinner = UIActivityIndicatorView(style: .medium)
+    private let spinner = UIActivityIndicatorView(style: .large)
     private let nameLabel = UILabel()
     private let typesStackView = UIStackView()
     private let flavorLabel = UILabel()
@@ -17,14 +24,12 @@ class PokemonCell: UITableViewCell {
         artworkImageView.translatesAutoresizingMaskIntoConstraints = false
         artworkImageView.contentMode = .scaleAspectFit
         spinner.translatesAutoresizingMaskIntoConstraints = false
-        spinner.hidesWhenStopped = true
 
         nameLabel.translatesAutoresizingMaskIntoConstraints = false
         let headline = UIFont.preferredFont(forTextStyle: .headline)
         nameLabel.font = UIFont.bricolageGrotesque(ofSize: headline.pointSize, weight: .bold)
 
         typesStackView.translatesAutoresizingMaskIntoConstraints = false
-        typesStackView.axis = .horizontal
         typesStackView.spacing = 4
 
         flavorLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -42,7 +47,7 @@ class PokemonCell: UITableViewCell {
 
         NSLayoutConstraint.activate([
             artworkImageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 8),
-            artworkImageView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
+            artworkImageView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 20),
             artworkImageView.widthAnchor.constraint(equalToConstant: 72),
             artworkImageView.heightAnchor.constraint(equalToConstant: 72),
             spinner.centerXAnchor.constraint(equalTo: artworkImageView.centerXAnchor),
@@ -59,7 +64,7 @@ class PokemonCell: UITableViewCell {
             flavorLabel.leadingAnchor.constraint(equalTo: nameLabel.leadingAnchor),
             flavorLabel.topAnchor.constraint(equalTo: typesStackView.bottomAnchor, constant: 4),
             flavorLabel.trailingAnchor.constraint(equalTo: nameLabel.trailingAnchor),
-            flavorLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8)
+            flavorLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -20)
         ])
     }
 
