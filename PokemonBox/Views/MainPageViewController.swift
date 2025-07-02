@@ -176,10 +176,13 @@ extension MainPageViewController: UISearchResultsUpdating {
             unavailableView.isHidden = true
             return
         }
-        if let names = pokemonTypeMap[text] {
-            filteredNames = names
-        } else {
+        let matchedTypeNames = pokemonTypeMap
+            .filter { $0.key.localizedCaseInsensitiveContains(text) }
+            .flatMap { $0.value }
+        if matchedTypeNames.isEmpty {
             filteredNames = pokemonNameMap.filter { $0.localizedCaseInsensitiveContains(text) }
+        } else {
+            filteredNames = Array(Set(matchedTypeNames))
         }
         searchOffset = 0
         pokemons.removeAll()
