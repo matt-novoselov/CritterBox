@@ -45,15 +45,41 @@ class PokemonService {
         return Set(list.results.map { $0.name })
     }
 
+    /// Downloads all pokemon names grouped by type name.
+    /// - Returns: A dictionary keyed by type name with an array of pokemon names.
+    func fetchPokemonTypeMap() async throws -> [String: [String]] {
+        let typeListURL = baseURL.appendingPathComponent("type")
+        let data = try await fetchData(from: typeListURL)
+        let list = try JSONDecoder().decode(PokemonTypeListResponse.self, from: data)
+        var result: [String: [String]] = [:]
+        try await withThrowingTaskGroup(of: (String, [String]).self) { group in
+            for type in list.results {
+                group.addTask {
+                    let detailData = try await self.fetchData(from: type.url)
+                    let detail = try JSONDecoder().decode(PokemonTypeDetailResponse.self, from: detailData)
+                    let names = detail.pokemon.map { $0.pokemon.name }
+                    return (type.name, names)
+                }
+            }
+            for try await (name, names) in group {
+                result[name] = names
+            }
+        }
+        return result
+    }
+
     func fetchPokemon(named name: String) async throws -> Pokemon {
         let detailURL = baseURL.appendingPathComponent("pokemon").appendingPathComponent(name)
-        let speciesURL = baseURL.appendingPathComponent("pokemon-species").appendingPathComponent(name)
-        async let detailData = fetchData(from: detailURL)
-        async let speciesData = fetchData(from: speciesURL)
-        let detailRaw = try await detailData
-        let speciesRaw = try await speciesData
+        let detailRaw = try await fetchData(from: detailURL)
         let detail = try JSONDecoder().decode(PokemonDetailResponse.self, from: detailRaw)
-        let species = try JSONDecoder().decode(PokemonSpeciesResponse.self, from: speciesRaw)
+
+        // Skip forms by reloading canonical species if needed
+        if detail.name != detail.species.name {
+            return try await fetchPokemon(named: detail.species.name)
+        }
+
+        let speciesData = try await fetchData(from: detail.species.url)
+        let species = try JSONDecoder().decode(PokemonSpeciesResponse.self, from: speciesData)
         var flavor = species.flavor_text_entries.first { $0.language.name == "en" }?
             .flavor_text
             .replacingOccurrences(of: "\n", with: " ")

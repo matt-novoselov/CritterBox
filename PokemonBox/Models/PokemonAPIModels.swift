@@ -33,6 +33,10 @@ struct PokemonDetailResponse: Decodable {
     struct TypeEntry: Decodable {
         let type: NamedAPIResource
     }
+    struct Species: Decodable {
+        let name: String
+        let url: URL
+    }
     struct Sprites: Decodable {
         struct Other: Decodable {
             struct OfficialArtwork: Decodable {
@@ -47,6 +51,7 @@ struct PokemonDetailResponse: Decodable {
     }
     let name: String
     let types: [TypeEntry]
+    let species: Species
     let sprites: Sprites
 }
 
@@ -61,4 +66,19 @@ struct PokemonSpeciesResponse: Decodable {
 struct PokemonPage {
     let totalCount: Int
     let items: [Pokemon]
+}
+
+struct PokemonTypeListResponse: Decodable {
+    struct Result: Decodable {
+        let name: String
+        let url: URL
+    }
+    let results: [Result]
+}
+
+struct PokemonTypeDetailResponse: Decodable {
+    struct PokemonEntry: Decodable {
+        let pokemon: NamedAPIResource
+    }
+    let pokemon: [PokemonEntry]
 }
