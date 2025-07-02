@@ -10,12 +10,19 @@ import UIKit
 class ViewController: UIViewController {
 
     private var pokemons: [Pokemon] = []
+    private var searchResults: [Pokemon] = []
+    private var allPokemons: [Pokemon]?
+    private var searchTask: Task<Void, Never>?
     private var totalCount: Int?
     private var isLoading = false
     private let pageSize = 20
     private let tableView = UITableView()
     private let refreshControl = UIRefreshControl()
     private let searchController = UISearchController(searchResultsController: nil)
+
+    private var isSearchActive: Bool {
+        searchController.isActive && !(searchController.searchBar.text?.isEmpty ?? true)
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -37,6 +44,9 @@ class ViewController: UIViewController {
         titleStack.alignment = .center
         navigationItem.titleView = titleStack
         searchController.searchBar.placeholder = "Search name or type"
+        searchController.searchResultsUpdater = self
+        searchController.obscuresBackgroundDuringPresentation = false
+        searchController.searchBar.delegate = self
         navigationItem.searchController = searchController
         navigationItem.hidesSearchBarWhenScrolling = false
 
@@ -88,6 +98,7 @@ class ViewController: UIViewController {
                 }
                 pokemons += page.items
                 tableView.reloadData()
+                updateBackgroundView()
             } catch {
                 print("Failed to fetch pokemons: \(error)")
             }
@@ -97,11 +108,21 @@ class ViewController: UIViewController {
             }
         }
     }
+
+    private func updateBackgroundView() {
+        if isSearchActive && searchResults.isEmpty {
+            var config = UIContentUnavailableConfiguration.search()
+            config.text = "No Pokémon Found"
+            tableView.backgroundView = UIContentUnavailableView(configuration: config)
+        } else {
+            tableView.backgroundView = nil
+        }
+    }
 }
 
 extension ViewController: UITableViewDataSource {
     func numberOfSections(in tableView: UITableView) -> Int {
-        return pokemons.count
+        return (isSearchActive ? searchResults : pokemons).count
     }
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -110,7 +131,8 @@ extension ViewController: UITableViewDataSource {
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: PokemonCell.reuseIdentifier, for: indexPath) as! PokemonCell
-        cell.configure(with: pokemons[indexPath.section])
+        let data = isSearchActive ? searchResults : pokemons
+        cell.configure(with: data[indexPath.section])
         return cell
     }
 }
@@ -127,6 +149,7 @@ extension ViewController: UITableViewDelegate {
     }
 
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        guard !isSearchActive else { return }
         if indexPath.section == pokemons.count - 4 {
             if let total = totalCount {
                 if pokemons.count < total {
@@ -136,6 +159,45 @@ extension ViewController: UITableViewDelegate {
                 loadNextPage()
             }
         }
+    }
+}
+
+extension ViewController: UISearchResultsUpdating, UISearchBarDelegate {
+    func updateSearchResults(for searchController: UISearchController) {
+        guard let text = searchController.searchBar.text?.lowercased() else { return }
+        guard !text.isEmpty else {
+            searchResults.removeAll()
+            updateBackgroundView()
+            tableView.reloadData()
+            return
+        }
+
+        searchTask?.cancel()
+        searchTask = Task {
+            if allPokemons == nil {
+                do {
+                    allPokemons = try await PokemonService().fetchAllPokemon()
+                } catch {
+                    print("Failed to fetch all pokemons: \(error)")
+                    return
+                }
+            }
+            let results = allPokemons?.filter { pokemon in
+                pokemon.name.lowercased().contains(text) ||
+                pokemon.types.contains(where: { $0.lowercased().contains(text) })
+            } ?? []
+            await MainActor.run {
+                searchResults = results
+                tableView.reloadData()
+                updateBackgroundView()
+            }
+        }
+    }
+
+    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+        searchResults.removeAll()
+        updateBackgroundView()
+        tableView.reloadData()
     }
 }
 
