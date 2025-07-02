@@ -188,10 +188,17 @@ private extension ViewController {
         Task {
             do {
                 let service = PokemonService()
-                for name in names {
-                    let pokemon = try await service.fetchPokemon(named: name)
-                    pokemons.append(pokemon)
+                let pagePokemons = try await withThrowingTaskGroup(of: Pokemon.self) { group in
+                    for name in names {
+                        group.addTask { try await service.fetchPokemon(named: name) }
+                    }
+                    var result: [Pokemon] = []
+                    for try await pokemon in group {
+                        result.append(pokemon)
+                    }
+                    return result
                 }
+                pokemons.append(contentsOf: pagePokemons)
                 tableView.reloadData()
             } catch {
                 print("Failed to fetch search results: \(error)")
