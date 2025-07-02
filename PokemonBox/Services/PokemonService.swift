@@ -26,18 +26,6 @@ class PokemonService {
         return PokemonPage(totalCount: list.count, items: result)
     }
 
-    func fetchAllPokemon(limit: Int = 2000) async throws -> [Pokemon] {
-        let listURL = baseURL.appendingPathComponent("pokemon").appending(queryItems: [URLQueryItem(name: "limit", value: String(limit))])
-        let (data, _) = try await session.data(from: listURL)
-        let list = try JSONDecoder().decode(PokemonListResponse.self, from: data)
-        var result: [Pokemon] = []
-        for item in list.results {
-            let pokemon = try await fetchPokemon(named: item.name)
-            result.append(pokemon)
-        }
-        return result
-    }
-
     private func fetchPokemon(named name: String) async throws -> Pokemon {
         let detailURL = baseURL.appendingPathComponent("pokemon").appendingPathComponent(name)
         let speciesURL = baseURL.appendingPathComponent("pokemon-species").appendingPathComponent(name)
