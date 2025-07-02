@@ -42,7 +42,7 @@ class PokemonService {
     func fetchPokemonNameSet() async throws -> Set<String> {
         let listURL = baseURL
             .appendingPathComponent(APIConstants.Path.pokemonSpecies)
-            .appending(queryItems: [URLQueryItem(name: APIConstants.Query.limit, value: APIConstants.Query.limit)])
+            .appending(queryItems: [URLQueryItem(name: APIConstants.Query.limit, value: APIConstants.Query.limitValue)])
         let data = try await fetchData(from: listURL)
         let list = try JSONDecoder().decode(PokemonListResponse.self, from: data)
         return Set(list.results.map { $0.name })
