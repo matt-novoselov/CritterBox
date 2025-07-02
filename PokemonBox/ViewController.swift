@@ -12,6 +12,7 @@ class ViewController: UIViewController {
     private var pokemons: [Pokemon] = []
     private var searchResults: [Pokemon] = []
     private var allPokemons: [Pokemon]?
+    private var allPokemonsTask: Task<[Pokemon], Error>?
     private var searchTask: Task<Void, Never>?
     private var totalCount: Int?
     private var isLoading = false
@@ -164,8 +165,8 @@ extension ViewController: UITableViewDelegate {
 
 extension ViewController: UISearchResultsUpdating, UISearchBarDelegate {
     func updateSearchResults(for searchController: UISearchController) {
-        guard let text = searchController.searchBar.text?.lowercased() else { return }
-        guard !text.isEmpty else {
+        guard let query = searchController.searchBar.text?.lowercased() else { return }
+        guard !query.isEmpty else {
             searchResults.removeAll()
             updateBackgroundView()
             tableView.reloadData()
@@ -173,28 +174,42 @@ extension ViewController: UISearchResultsUpdating, UISearchBarDelegate {
         }
 
         searchTask?.cancel()
-        searchTask = Task {
-            if allPokemons == nil {
+        searchTask = Task { [weak self] in
+            guard let self else { return }
+
+            if self.allPokemons == nil {
+                if self.allPokemonsTask == nil {
+                    self.allPokemonsTask = Task {
+                        try await PokemonService().fetchAllPokemon()
+                    }
+                }
+
                 do {
-                    allPokemons = try await PokemonService().fetchAllPokemon()
+                    self.allPokemons = try await self.allPokemonsTask!.value
                 } catch {
-                    print("Failed to fetch all pokemons: \(error)")
+                    if (error as? URLError)?.code != .cancelled {
+                        print("Failed to fetch all pokemons: \(error)")
+                    }
                     return
                 }
             }
-            let results = allPokemons?.filter { pokemon in
-                pokemon.name.lowercased().contains(text) ||
-                pokemon.types.contains(where: { $0.lowercased().contains(text) })
-            } ?? []
+
+            guard let all = self.allPokemons else { return }
+            let results = all.filter { pokemon in
+                pokemon.name.lowercased().contains(query) ||
+                pokemon.types.contains(where: { $0.lowercased().contains(query) })
+            }
+
             await MainActor.run {
-                searchResults = results
-                tableView.reloadData()
-                updateBackgroundView()
+                self.searchResults = results
+                self.tableView.reloadData()
+                self.updateBackgroundView()
             }
         }
     }
 
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+        searchTask?.cancel()
         searchResults.removeAll()
         updateBackgroundView()
         tableView.reloadData()
