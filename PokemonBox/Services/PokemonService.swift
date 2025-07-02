@@ -1,3 +1,10 @@
+//
+//  ViewController.swift
+//  PokemonBox
+//
+//  Created by Matt Novoselov on 01/07/25.
+//
+
 import Foundation
 
 
@@ -11,7 +18,7 @@ class PokemonService {
 
     func fetchPokemonPage(limit: Int = 20, offset: Int = 0) async throws -> PokemonPage {
         let listURL = baseURL
-            .appendingPathComponent("pokemon")
+            .appendingPathComponent("pokemon-species")
             .appending(queryItems: [
                 URLQueryItem(name: "limit", value: String(limit)),
                 URLQueryItem(name: "offset", value: String(offset))
@@ -26,56 +33,21 @@ class PokemonService {
         return PokemonPage(totalCount: list.count, items: result)
     }
 
-    /// Downloads the list of all Pokemon names with their URLs.
-    /// - Returns: A dictionary where the key is a Pokemon name and the value is
-    ///   the corresponding API URL.
-    func fetchPokemonNameMap() async throws -> [String: URL] {
+    /// Downloads the list of all Pokemon names.
+    /// - Returns: A set of Pokemon names.
+    func fetchPokemonNameSet() async throws -> Set<String> {
         let listURL = baseURL
-            .appendingPathComponent("pokemon")
-            .appending(queryItems: [URLQueryItem(name: "limit", value: "100000")])
+            .appendingPathComponent("pokemon-species")
+            .appending(queryItems: [URLQueryItem(name: "limit", value: "100_000")])
         let data = try await fetchData(from: listURL)
         let list = try JSONDecoder().decode(PokemonListResponse.self, from: data)
-        var map: [String: URL] = [:]
-        for item in list.results {
-            map[item.name] = item.url
-        }
-        return map
+        return Set(list.results.map { $0.name })
     }
 
     func fetchPokemon(named name: String) async throws -> Pokemon {
         let detailURL = baseURL.appendingPathComponent("pokemon").appendingPathComponent(name)
         let speciesURL = baseURL.appendingPathComponent("pokemon-species").appendingPathComponent(name)
         async let detailData = fetchData(from: detailURL)
-        async let speciesData = fetchData(from: speciesURL)
-        let detailRaw = try await detailData
-        let speciesRaw = try await speciesData
-        let detail = try JSONDecoder().decode(PokemonDetailResponse.self, from: detailRaw)
-        let species = try JSONDecoder().decode(PokemonSpeciesResponse.self, from: speciesRaw)
-        var flavor = species.flavor_text_entries.first { $0.language.name == "en" }?
-            .flavor_text
-            .replacingOccurrences(of: "\n", with: " ")
-            .replacingOccurrences(of: "\u{000c}", with: " ")
-        if var text = flavor {
-            let sentences = text.split(separator: ".", omittingEmptySubsequences: true)
-            if sentences.count > 1, let first = sentences.first {
-                text = first.trimmingCharacters(in: .whitespaces) + "."
-            }
-            flavor = text
-        }
-        let types = detail.types.map { $0.type.name }
-        let artwork = detail.sprites.other.officialArtwork.front_default
-        return Pokemon(name: detail.name, flavorText: flavor, types: types, artworkURL: artwork)
-    }
-
-    /// Fetches a Pokemon using the URL obtained from the name map.
-    /// - Parameter url: The detail URL of the Pokemon (from `/pokemon`).
-    func fetchPokemon(at url: URL) async throws -> Pokemon {
-        var id = url.lastPathComponent
-        if id.isEmpty {
-            id = url.deletingLastPathComponent().lastPathComponent
-        }
-        let speciesURL = baseURL.appendingPathComponent("pokemon-species").appendingPathComponent(id)
-        async let detailData = fetchData(from: url)
         async let speciesData = fetchData(from: speciesURL)
         let detailRaw = try await detailData
         let speciesRaw = try await speciesData

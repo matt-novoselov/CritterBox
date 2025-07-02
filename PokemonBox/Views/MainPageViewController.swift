@@ -7,15 +7,16 @@
 
 import UIKit
 
-class ViewController: UIViewController {
+fileprivate let pageSize = 20
 
-    private var pokemons: [Pokemon] = []
+class MainPageViewController: UIViewController {
+
+    private var pokemons = [Pokemon]()
     private var totalCount: Int?
     private var isLoading = false
-    private var pokemonNameMap: [String: URL] = [:]
-    private var filteredNames: [String] = []
+    private var pokemonNameMap = Set<String>()
+    private var filteredNames = [String]()
     private var searchOffset = 0
-    private let pageSize = 20
     private let tableView = UITableView()
     private let refreshControl = UIRefreshControl()
     private let searchController = UISearchController(searchResultsController: nil)
@@ -23,8 +24,6 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
-
-        navigationItem.title = "PokemonBox"
 
         // Custom title with mixed font weights
         let pokemonLabel = UILabel()
@@ -35,15 +34,13 @@ class ViewController: UIViewController {
         boxLabel.font = UIFont.bricolageGrotesque(ofSize: 26, weight: .bold)
 
         let titleStack = UIStackView(arrangedSubviews: [pokemonLabel, boxLabel])
-        titleStack.axis = .horizontal
-        titleStack.spacing = 0
-        titleStack.alignment = .center
         navigationItem.titleView = titleStack
         searchController.searchBar.placeholder = "Search name or type"
         navigationItem.searchController = searchController
         navigationItem.hidesSearchBarWhenScrolling = false
         searchController.obscuresBackgroundDuringPresentation = false
         searchController.searchResultsUpdater = self
+        searchController.searchBar.delegate = self
 
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.dataSource = self
@@ -55,8 +52,6 @@ class ViewController: UIViewController {
         tableView.tableHeaderView = UIView(frame: .zero)
         tableView.tableFooterView = UIView(frame: .zero)
         refreshControl.addTarget(self, action: #selector(refreshPokemons), for: .valueChanged)
-        tableView.contentInset.top = 16
-        tableView.contentInset.bottom = 16
         
         view.addSubview(tableView)
         NSLayoutConstraint.activate([
@@ -69,7 +64,7 @@ class ViewController: UIViewController {
         Task {
             do {
                 let service = PokemonService()
-                pokemonNameMap = try await service.fetchPokemonNameMap()
+                pokemonNameMap = try await service.fetchPokemonNameSet()
             } catch {
                 print("Failed to prefetch names: \(error)")
             }
@@ -113,7 +108,7 @@ class ViewController: UIViewController {
     }
 }
 
-extension ViewController: UITableViewDataSource {
+extension MainPageViewController: UITableViewDataSource {
     func numberOfSections(in tableView: UITableView) -> Int {
         return pokemons.count
     }
@@ -129,11 +124,11 @@ extension ViewController: UITableViewDataSource {
     }
 }
 
-extension ViewController: UITableViewDelegate {
+extension MainPageViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
-        return 16
+        return 0
     }
-
+    
     func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
         let view = UIView()
         view.backgroundColor = .clear
@@ -157,7 +152,7 @@ extension ViewController: UITableViewDelegate {
     }
 }
 
-extension ViewController: UISearchResultsUpdating {
+extension MainPageViewController: UISearchResultsUpdating {
     func updateSearchResults(for searchController: UISearchController) {
         guard let text = searchController.searchBar.text?.lowercased(), !text.isEmpty else {
             if !filteredNames.isEmpty {
@@ -165,7 +160,7 @@ extension ViewController: UISearchResultsUpdating {
             }
             return
         }
-        filteredNames = pokemonNameMap.keys.filter { $0.contains(text) }.sorted()
+        filteredNames = pokemonNameMap.filter { $0.localizedCaseInsensitiveContains(text) }
         searchOffset = 0
         pokemons.removeAll()
         tableView.reloadData()
@@ -173,7 +168,7 @@ extension ViewController: UISearchResultsUpdating {
     }
 }
 
-private extension ViewController {
+private extension MainPageViewController {
     func cancelSearch() {
         filteredNames.removeAll()
         searchOffset = 0
@@ -190,11 +185,7 @@ private extension ViewController {
                 let service = PokemonService()
                 let pagePokemons = try await withThrowingTaskGroup(of: Pokemon.self) { group in
                     for name in names {
-                        if let url = pokemonNameMap[name] {
-                            group.addTask { try await service.fetchPokemon(at: url) }
-                        } else {
-                            group.addTask { try await service.fetchPokemon(named: name) }
-                        }
+                        group.addTask { try await service.fetchPokemon(named: name) }
                     }
                     var result: [Pokemon] = []
                     for try await pokemon in group {
@@ -205,10 +196,15 @@ private extension ViewController {
                 pokemons.append(contentsOf: pagePokemons)
                 tableView.reloadData()
             } catch {
-                print("Failed to fetch search results: \(error)")
+                print("Failed to fetch search results: \(error) for \(names)")
             }
             isLoading = false
         }
     }
 }
 
+extension MainPageViewController: UISearchBarDelegate {
+    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+        cancelSearch()
+    }
+}

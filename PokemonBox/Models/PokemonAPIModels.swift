@@ -1,18 +1,25 @@
+//
+//  ViewController.swift
+//  PokemonBox
+//
+//  Created by Matt Novoselov on 01/07/25.
+//
+
 import Foundation
 
-struct Pokemon: Codable {
+struct Pokemon: Decodable {
     let name: String
     let flavorText: String?
     let types: [String]
     let artworkURL: URL?
 }
 
-struct NamedAPIResource: Codable {
+struct NamedAPIResource: Decodable {
     let name: String
 }
 
-struct PokemonListResponse: Codable {
-    struct Result: Codable {
+struct PokemonListResponse: Decodable {
+    struct Result: Decodable {
         let name: String
         let url: URL
     }
@@ -22,13 +29,13 @@ struct PokemonListResponse: Codable {
     let results: [Result]
 }
 
-struct PokemonDetailResponse: Codable {
-    struct TypeEntry: Codable {
+struct PokemonDetailResponse: Decodable {
+    struct TypeEntry: Decodable {
         let type: NamedAPIResource
     }
-    struct Sprites: Codable {
-        struct Other: Codable {
-            struct OfficialArtwork: Codable {
+    struct Sprites: Decodable {
+        struct Other: Decodable {
+            struct OfficialArtwork: Decodable {
                 let front_default: URL?
             }
             let officialArtwork: OfficialArtwork
@@ -43,8 +50,8 @@ struct PokemonDetailResponse: Codable {
     let sprites: Sprites
 }
 
-struct PokemonSpeciesResponse: Codable {
-    struct FlavorTextEntry: Codable {
+struct PokemonSpeciesResponse: Decodable {
+    struct FlavorTextEntry: Decodable {
         let flavor_text: String
         let language: NamedAPIResource
     }
