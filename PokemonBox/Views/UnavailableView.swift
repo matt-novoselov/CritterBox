@@ -11,7 +11,7 @@ import UIKit
 /// A view used when search returns no results.
 /// Displays a slightly transparent silhouette image with a title and message.
 final class UnavailableView: UIView {
-    private let imageView = UIImageView(image: UIImage(named: "silhouette-placeholder"))
+    private let imageView = UIImageView(image: UIImage(resource: .silhouettePlaceholder))
     private let titleLabel = UILabel()
     private let messageLabel = UILabel()
 
