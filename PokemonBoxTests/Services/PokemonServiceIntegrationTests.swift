@@ -94,7 +94,7 @@ struct PokemonServiceIntegrationTests {
             let parts = flavor.split(separator: ".", omittingEmptySubsequences: true)
             #expect(parts.count == 1)
         } else {
-            #expect(false)
+            fatalError()
         }
     }
 }
