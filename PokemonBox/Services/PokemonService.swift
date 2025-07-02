@@ -26,7 +26,23 @@ class PokemonService {
         return PokemonPage(totalCount: list.count, items: result)
     }
 
-    private func fetchPokemon(named name: String) async throws -> Pokemon {
+    /// Downloads the list of all Pokemon names with their URLs.
+    /// - Returns: A dictionary where the key is a Pokemon name and the value is
+    ///   the corresponding API URL.
+    func fetchPokemonNameMap() async throws -> [String: URL] {
+        let listURL = baseURL
+            .appendingPathComponent("pokemon")
+            .appending(queryItems: [URLQueryItem(name: "limit", value: "100000")])
+        let (data, _) = try await session.data(from: listURL)
+        let list = try JSONDecoder().decode(PokemonListResponse.self, from: data)
+        var map: [String: URL] = [:]
+        for item in list.results {
+            map[item.name] = item.url
+        }
+        return map
+    }
+
+    func fetchPokemon(named name: String) async throws -> Pokemon {
         let detailURL = baseURL.appendingPathComponent("pokemon").appendingPathComponent(name)
         let speciesURL = baseURL.appendingPathComponent("pokemon-species").appendingPathComponent(name)
         async let detailData = session.data(from: detailURL)

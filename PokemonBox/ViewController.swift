@@ -12,6 +12,9 @@ class ViewController: UIViewController {
     private var pokemons: [Pokemon] = []
     private var totalCount: Int?
     private var isLoading = false
+    private var pokemonNameMap: [String: URL] = [:]
+    private var filteredNames: [String] = []
+    private var searchOffset = 0
     private let pageSize = 20
     private let tableView = UITableView()
     private let refreshControl = UIRefreshControl()
@@ -39,6 +42,8 @@ class ViewController: UIViewController {
         searchController.searchBar.placeholder = "Search name or type"
         navigationItem.searchController = searchController
         navigationItem.hidesSearchBarWhenScrolling = false
+        searchController.obscuresBackgroundDuringPresentation = false
+        searchController.searchResultsUpdater = self
 
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.dataSource = self
@@ -60,6 +65,15 @@ class ViewController: UIViewController {
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
         ])
+
+        Task {
+            do {
+                let service = PokemonService()
+                pokemonNameMap = try await service.fetchPokemonNameMap()
+            } catch {
+                print("Failed to prefetch names: \(error)")
+            }
+        }
 
         loadNextPage(reset: true)
     }
@@ -128,13 +142,61 @@ extension ViewController: UITableViewDelegate {
 
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         if indexPath.section == pokemons.count - 4 {
-            if let total = totalCount {
-                if pokemons.count < total {
+            if searchController.isActive && !(searchController.searchBar.text?.isEmpty ?? true) {
+                loadNextSearchPage()
+            } else {
+                if let total = totalCount {
+                    if pokemons.count < total {
+                        loadNextPage()
+                    }
+                } else {
                     loadNextPage()
                 }
-            } else {
-                loadNextPage()
             }
+        }
+    }
+}
+
+extension ViewController: UISearchResultsUpdating {
+    func updateSearchResults(for searchController: UISearchController) {
+        guard let text = searchController.searchBar.text?.lowercased(), !text.isEmpty else {
+            if !filteredNames.isEmpty {
+                cancelSearch()
+            }
+            return
+        }
+        filteredNames = pokemonNameMap.keys.filter { $0.contains(text) }.sorted()
+        searchOffset = 0
+        pokemons.removeAll()
+        tableView.reloadData()
+        loadNextSearchPage()
+    }
+}
+
+private extension ViewController {
+    func cancelSearch() {
+        filteredNames.removeAll()
+        searchOffset = 0
+        loadNextPage(reset: true)
+    }
+
+    func loadNextSearchPage() {
+        guard !isLoading, searchOffset < filteredNames.count else { return }
+        isLoading = true
+        let names = filteredNames[searchOffset..<min(searchOffset + pageSize, filteredNames.count)]
+        searchOffset += names.count
+        Task {
+            do {
+                let service = PokemonService()
+                for name in names {
+                    let pokemon = try await service.fetchPokemon(named: name)
+                    pokemons.append(pokemon)
+                }
+                tableView.reloadData()
+            } catch {
+                print("Failed to fetch search results: \(error)")
+            }
+            isLoading = false
         }
     }
 }
