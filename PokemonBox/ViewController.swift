@@ -127,7 +127,7 @@ extension ViewController: UITableViewDelegate {
     }
 
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        if indexPath.section == pokemons.count - 1 {
+        if indexPath.section == pokemons.count - 4 {
             if let total = totalCount {
                 if pokemons.count < total {
                     loadNextPage()
