@@ -96,16 +96,22 @@ class PokemonCell: UITableViewCell {
         flavorLabel.text = pokemon.flavorText
         if let url = pokemon.artworkURL {
             spinner.startAnimating()
-            task = Task {
-                do {
-                    let (data, _) = try await URLSession.shared.data(from: url)
-                    if !Task.isCancelled {
-                        artworkImageView.image = UIImage(data: data)
+            if let cached = ImageCache.shared.image(for: url) {
+                artworkImageView.image = cached
+                spinner.stopAnimating()
+            } else {
+                task = Task {
+                    do {
+                        let (data, _) = try await URLSession.shared.data(from: url)
+                        if !Task.isCancelled, let image = UIImage(data: data) {
+                            ImageCache.shared.insertImage(image, for: url)
+                            artworkImageView.image = image
+                        }
+                        spinner.stopAnimating()
+                    } catch {
+                        // ignore loading errors
                         spinner.stopAnimating()
                     }
-                } catch {
-                    // ignore loading errors
-                    spinner.stopAnimating()
                 }
             }
         } else {
