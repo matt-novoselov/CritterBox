@@ -70,13 +70,16 @@ class PokemonService {
 
     func fetchPokemon(named name: String) async throws -> Pokemon {
         let detailURL = baseURL.appendingPathComponent("pokemon").appendingPathComponent(name)
-        let speciesURL = baseURL.appendingPathComponent("pokemon-species").appendingPathComponent(name)
-        async let detailData = fetchData(from: detailURL)
-        async let speciesData = fetchData(from: speciesURL)
-        let detailRaw = try await detailData
-        let speciesRaw = try await speciesData
+        let detailRaw = try await fetchData(from: detailURL)
         let detail = try JSONDecoder().decode(PokemonDetailResponse.self, from: detailRaw)
-        let species = try JSONDecoder().decode(PokemonSpeciesResponse.self, from: speciesRaw)
+
+        // Skip forms by reloading canonical species if needed
+        if detail.name != detail.species.name {
+            return try await fetchPokemon(named: detail.species.name)
+        }
+
+        let speciesData = try await fetchData(from: detail.species.url)
+        let species = try JSONDecoder().decode(PokemonSpeciesResponse.self, from: speciesData)
         var flavor = species.flavor_text_entries.first { $0.language.name == "en" }?
             .flavor_text
             .replacingOccurrences(of: "\n", with: " ")
