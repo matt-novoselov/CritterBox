@@ -20,6 +20,16 @@ class MainPageViewController: UIViewController {
     private let tableView = UITableView()
     private let refreshControl = UIRefreshControl()
     private let searchController = UISearchController(searchResultsController: nil)
+    private let unavailableView: UIView = {
+        var config = UIContentUnavailableConfiguration.empty()
+        config.text = "No Pokémon Found!"
+        config.secondaryText = "Even Professor Oak is stumped. Try another search!"
+        config.image = UIImage(named: "silhouette-placeholder")
+        let view = UIContentUnavailableView(configuration: config)
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.imageView?.alpha = 0.25
+        return view
+    }()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -52,13 +62,22 @@ class MainPageViewController: UIViewController {
         tableView.tableHeaderView = UIView(frame: .zero)
         tableView.tableFooterView = UIView(frame: .zero)
         refreshControl.addTarget(self, action: #selector(refreshPokemons), for: .valueChanged)
-        
+
         view.addSubview(tableView)
         NSLayoutConstraint.activate([
             tableView.topAnchor.constraint(equalTo: view.topAnchor),
             tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
+        ])
+
+        unavailableView.isHidden = true
+        view.addSubview(unavailableView)
+        NSLayoutConstraint.activate([
+            unavailableView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            unavailableView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            unavailableView.leadingAnchor.constraint(greaterThanOrEqualTo: view.leadingAnchor, constant: 16),
+            unavailableView.trailingAnchor.constraint(lessThanOrEqualTo: view.trailingAnchor, constant: -16)
         ])
 
         Task {
@@ -158,13 +177,19 @@ extension MainPageViewController: UISearchResultsUpdating {
             if !filteredNames.isEmpty {
                 cancelSearch()
             }
+            unavailableView.isHidden = true
             return
         }
         filteredNames = pokemonNameMap.filter { $0.localizedCaseInsensitiveContains(text) }
         searchOffset = 0
         pokemons.removeAll()
         tableView.reloadData()
-        loadNextSearchPage()
+        if filteredNames.isEmpty {
+            unavailableView.isHidden = false
+        } else {
+            unavailableView.isHidden = true
+            loadNextSearchPage()
+        }
     }
 }
 
@@ -173,6 +198,7 @@ private extension MainPageViewController {
         filteredNames.removeAll()
         searchOffset = 0
         loadNextPage(reset: true)
+        unavailableView.isHidden = true
     }
 
     func loadNextSearchPage() {
@@ -195,6 +221,7 @@ private extension MainPageViewController {
                 }
                 pokemons.append(contentsOf: pagePokemons)
                 tableView.reloadData()
+                unavailableView.isHidden = !pokemons.isEmpty
             } catch {
                 print("Failed to fetch search results: \(error) for \(names)")
             }
