@@ -10,6 +10,7 @@ import Foundation
 
 class PokemonService {
     private let session: URLSession
+    private let cache = NSCache<NSURL, NSData>()
     private let baseURL = URL(string: "https://pokeapi.co/api/v2")!
 
     init(session: URLSession = .shared) {
@@ -70,10 +71,14 @@ class PokemonService {
     }
 
     private func fetchData(from url: URL) async throws -> Data {
+        if let cached = cache.object(forKey: url as NSURL) {
+            return cached as Data
+        }
         let (data, response) = try await session.data(from: url)
         guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
             throw URLError(.badServerResponse)
         }
+        cache.setObject(data as NSData, forKey: url as NSURL)
         return data
     }
 }
