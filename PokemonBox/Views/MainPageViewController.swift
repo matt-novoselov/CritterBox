@@ -20,6 +20,7 @@ class MainPageViewController: UIViewController {
     private let tableView = UITableView()
     private let refreshControl = UIRefreshControl()
     private let searchController = UISearchController(searchResultsController: nil)
+    private let unavailableView = UnavailableView()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -59,6 +60,16 @@ class MainPageViewController: UIViewController {
             tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
+        ])
+        
+        unavailableView.isHidden = true
+        unavailableView.configure(title: "No Pokémon Found!", message: "Looks like even the tall grass is empty. Try another search.")
+        view.addSubview(unavailableView)
+        NSLayoutConstraint.activate([
+            unavailableView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            unavailableView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            unavailableView.leadingAnchor.constraint(greaterThanOrEqualTo: view.leadingAnchor, constant: 16),
+            unavailableView.trailingAnchor.constraint(lessThanOrEqualTo: view.trailingAnchor, constant: -16)
         ])
 
         Task {
@@ -158,13 +169,19 @@ extension MainPageViewController: UISearchResultsUpdating {
             if !filteredNames.isEmpty {
                 cancelSearch()
             }
+            unavailableView.isHidden = true
             return
         }
         filteredNames = pokemonNameMap.filter { $0.localizedCaseInsensitiveContains(text) }
         searchOffset = 0
         pokemons.removeAll()
         tableView.reloadData()
-        loadNextSearchPage()
+        if filteredNames.isEmpty {
+            unavailableView.isHidden = false
+        } else {
+            unavailableView.isHidden = true
+            loadNextSearchPage()
+        }
     }
 }
 
@@ -173,6 +190,7 @@ private extension MainPageViewController {
         filteredNames.removeAll()
         searchOffset = 0
         loadNextPage(reset: true)
+        unavailableView.isHidden = true
     }
 
     func loadNextSearchPage() {
@@ -195,6 +213,7 @@ private extension MainPageViewController {
                 }
                 pokemons.append(contentsOf: pagePokemons)
                 tableView.reloadData()
+                unavailableView.isHidden = pokemons.isEmpty ? false : true
             } catch {
                 print("Failed to fetch search results: \(error) for \(names)")
             }
