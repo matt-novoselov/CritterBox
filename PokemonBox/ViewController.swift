@@ -190,7 +190,11 @@ private extension ViewController {
                 let service = PokemonService()
                 let pagePokemons = try await withThrowingTaskGroup(of: Pokemon.self) { group in
                     for name in names {
-                        group.addTask { try await service.fetchPokemon(named: name) }
+                        if let url = pokemonNameMap[name] {
+                            group.addTask { try await service.fetchPokemon(at: url) }
+                        } else {
+                            group.addTask { try await service.fetchPokemon(named: name) }
+                        }
                     }
                     var result: [Pokemon] = []
                     for try await pokemon in group {
