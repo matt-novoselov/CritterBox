@@ -1,3 +1,10 @@
+//
+//  APIConstants.swift
+//  PokemonBox
+//
+//  Created by Matt Novoselov on 05/07/25.
+//
+
 import Foundation
 
 // Constants used for interacting with the PokéAPI.

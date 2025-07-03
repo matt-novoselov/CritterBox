@@ -1,3 +1,10 @@
+//
+//  ImageCache.swift
+//  PokemonBox
+//
+//  Created by Matt Novoselov on 05/07/25.
+//
+
 import UIKit
 
 /// A simple image cache using NSCache for official artwork images.
