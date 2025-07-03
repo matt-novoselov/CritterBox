@@ -130,7 +130,7 @@ private extension PokemonCell {
                         self.artworkImageView.image = image
                     }
                 } catch {
-                    // ignore loading errors
+                    print("Artwork loading error: \(error)")
                 }
                 DispatchQueue.main.async {
                     self.spinner.stopAnimating()

@@ -46,7 +46,6 @@ extension MainPageViewController {
         pokemonTableView.showsVerticalScrollIndicator = false
         pokemonTableView.tableHeaderView = UIView(frame: .zero)
 
-        loadingSpinner.hidesWhenStopped = true
         loadingSpinner.translatesAutoresizingMaskIntoConstraints = false
         loadingFooter.addSubview(loadingSpinner)
         NSLayoutConstraint.activate([

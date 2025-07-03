@@ -1,4 +1,4 @@
-//
+ //
 //  PokemonService+Detail.swift
 //  PokemonBox
 //
