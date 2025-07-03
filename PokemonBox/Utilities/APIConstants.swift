@@ -12,7 +12,7 @@ enum APIConstants {
     enum Query {
         static let limit = "limit"
         static let offset = "offset"
-        static let limitValue = "100_000"
+        static let limitValue = 100_000
     }
 
     enum Key {

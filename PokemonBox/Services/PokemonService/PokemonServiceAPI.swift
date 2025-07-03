@@ -38,7 +38,7 @@ enum PokemonAPIEndpoint {
             return APIConstants.baseURL
                 .appendingPathComponent(APIConstants.Path.pokemonSpecies)
                 .appending(queryItems: [
-                    URLQueryItem(name: APIConstants.Query.limit, value: APIConstants.Query.limitValue)
+                    URLQueryItem(name: APIConstants.Query.limit, value: APIConstants.Query.limitValue.description)
                 ])
         case .pokemonDetail(let name):
             return APIConstants.baseURL
