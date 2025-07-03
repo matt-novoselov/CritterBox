@@ -7,7 +7,11 @@
 
 import Foundation
 
-private let jsonDecoder = JSONDecoder()
+private let jsonDecoder: JSONDecoder = {
+    let decoder = JSONDecoder()
+    decoder.keyDecodingStrategy = .convertFromSnakeCase
+    return decoder
+}()
 
 extension PokemonService {
     /// Generic request for decoding API responses.

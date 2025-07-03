@@ -64,8 +64,8 @@ extension MainPageViewController {
         NSLayoutConstraint.activate([
             pokemonTableView.topAnchor.constraint(equalTo: view.topAnchor),
             pokemonTableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            pokemonTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-            pokemonTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
+            pokemonTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Layout.horizontalInset),
+            pokemonTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.horizontalInset)
         ])
     }
 

@@ -17,3 +17,10 @@ a search, additional pages are automatically loaded.
 
 See [PokéAPI documentation](https://pokeapi.co/docs/v2) for the REST API
 endpoints.
+
+## Next Steps: Modularization
+
+To improve separation of concerns and enable reuse across targets or apps,
+consider extracting the Core logic (Models & Services) into a standalone Swift
+Package (e.g. `PokemonBoxCore`). This package can then be imported into the
+main app (and any other clients) as a dependency.

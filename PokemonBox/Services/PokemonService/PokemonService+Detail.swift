@@ -24,9 +24,9 @@ extension PokemonService {
             PokemonSpeciesResponse.self,
             from: .speciesDetail(url: detail.species.url)
         )
-        var flavor = species.flavor_text_entries
+        var flavor = species.flavorTextEntries
             .first(where: { $0.language.name == "en" })?
-            .flavor_text
+            .flavorText
             .replacingOccurrences(of: "\n", with: " ")
             .replacingOccurrences(of: "\u{000c}", with: " ")
         if var text = flavor {
@@ -37,7 +37,7 @@ extension PokemonService {
             flavor = text
         }
         let types = detail.types.map { $0.type.name }
-        let artwork = detail.sprites.other.officialArtwork.front_default
+        let artwork = detail.sprites.other.officialArtwork.frontDefault
         return Pokemon(name: detail.name,
                        flavorText: flavor,
                        types: types,

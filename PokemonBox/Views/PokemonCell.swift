@@ -76,25 +76,25 @@ private extension PokemonCell {
 
     func setupConstraints() {
         NSLayoutConstraint.activate([
-            artworkImageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 8),
-            artworkImageView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 20),
-            artworkImageView.widthAnchor.constraint(equalToConstant: 72),
-            artworkImageView.heightAnchor.constraint(equalToConstant: 72),
+            artworkImageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: Layout.cellImageLeading),
+            artworkImageView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: Layout.cellInset),
+            artworkImageView.widthAnchor.constraint(equalToConstant: Layout.cellImageSize),
+            artworkImageView.heightAnchor.constraint(equalToConstant: Layout.cellImageSize),
             spinner.centerXAnchor.constraint(equalTo: artworkImageView.centerXAnchor),
             spinner.centerYAnchor.constraint(equalTo: artworkImageView.centerYAnchor),
 
-            nameLabel.leadingAnchor.constraint(equalTo: artworkImageView.trailingAnchor, constant: 16),
+            nameLabel.leadingAnchor.constraint(equalTo: artworkImageView.trailingAnchor, constant: Layout.horizontalInset),
             nameLabel.topAnchor.constraint(equalTo: artworkImageView.topAnchor),
-            nameLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -8),
+            nameLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -Layout.horizontalInset),
 
             typesStackView.leadingAnchor.constraint(equalTo: nameLabel.leadingAnchor),
-            typesStackView.topAnchor.constraint(equalTo: nameLabel.bottomAnchor, constant: 4),
+            typesStackView.topAnchor.constraint(equalTo: nameLabel.bottomAnchor, constant: Layout.cellElementSpacing),
             typesStackView.trailingAnchor.constraint(lessThanOrEqualTo: nameLabel.trailingAnchor),
 
             flavorLabel.leadingAnchor.constraint(equalTo: nameLabel.leadingAnchor),
-            flavorLabel.topAnchor.constraint(equalTo: typesStackView.bottomAnchor, constant: 4),
+            flavorLabel.topAnchor.constraint(equalTo: typesStackView.bottomAnchor, constant: Layout.cellElementSpacing),
             flavorLabel.trailingAnchor.constraint(equalTo: nameLabel.trailingAnchor),
-            flavorLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -20)
+            flavorLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -Layout.cellInset)
         ])
     }
 
