@@ -10,7 +10,7 @@ import UIKit
 class MainPageViewController: UIViewController {
     let viewModel = MainPageViewModel()
     var pokemons = [Pokemon]()
-    let tableView = UITableView()
+    let pokemonTableView = UITableView()
     let refreshControl = UIRefreshControl()
     let searchController = UISearchController(searchResultsController: nil)
     let unavailableView = UnavailableView()

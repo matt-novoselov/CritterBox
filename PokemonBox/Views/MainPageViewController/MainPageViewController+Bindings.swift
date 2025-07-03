@@ -17,7 +17,7 @@ extension MainPageViewController {
         viewModel.onPokemonsChange = { [weak self] items in
             DispatchQueue.main.async {
                 self?.pokemons = items
-                self?.tableView.reloadData()
+                self?.pokemonTableView.reloadData()
             }
         }
 
@@ -44,13 +44,13 @@ extension MainPageViewController {
     }
 
     func showLoadingFooter() {
-        loadingFooter.frame.size.width = tableView.frame.width
-        tableView.tableFooterView = loadingFooter
+        loadingFooter.frame.size.width = pokemonTableView.frame.width
+        pokemonTableView.tableFooterView = loadingFooter
         loadingSpinner.startAnimating()
     }
 
     func hideLoadingFooter() {
         loadingSpinner.stopAnimating()
-        tableView.tableFooterView = UIView(frame: .zero)
+        pokemonTableView.tableFooterView = UIView(frame: .zero)
     }
 }

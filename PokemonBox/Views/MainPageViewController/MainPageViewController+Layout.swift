@@ -36,15 +36,15 @@ extension MainPageViewController {
 
     /// Sets up the table view, refresh control, and loading footer.
     func setupTableView() {
-        tableView.translatesAutoresizingMaskIntoConstraints = false
-        tableView.dataSource = self
-        tableView.delegate = self
-        tableView.register(PokemonCell.self,
-                           forCellReuseIdentifier: PokemonCell.reuseIdentifier)
-        tableView.refreshControl = refreshControl
-        tableView.allowsSelection = false
-        tableView.showsVerticalScrollIndicator = false
-        tableView.tableHeaderView = UIView(frame: .zero)
+        pokemonTableView.translatesAutoresizingMaskIntoConstraints = false
+        pokemonTableView.dataSource = self
+        pokemonTableView.delegate = self
+        pokemonTableView.register(PokemonCell.self,
+                                  forCellReuseIdentifier: PokemonCell.reuseIdentifier)
+        pokemonTableView.refreshControl = refreshControl
+        pokemonTableView.allowsSelection = false
+        pokemonTableView.showsVerticalScrollIndicator = false
+        pokemonTableView.tableHeaderView = UIView(frame: .zero)
 
         loadingSpinner.hidesWhenStopped = true
         loadingSpinner.translatesAutoresizingMaskIntoConstraints = false
@@ -54,18 +54,18 @@ extension MainPageViewController {
             loadingSpinner.centerYAnchor.constraint(equalTo: loadingFooter.centerYAnchor)
         ])
         loadingFooter.frame.size.height = 44
-        tableView.tableFooterView = UIView(frame: .zero)
+        pokemonTableView.tableFooterView = UIView(frame: .zero)
 
         refreshControl.addTarget(self,
                                  action: #selector(didPullToRefresh),
                                  for: .valueChanged)
 
-        view.addSubview(tableView)
+        view.addSubview(pokemonTableView)
         NSLayoutConstraint.activate([
-            tableView.topAnchor.constraint(equalTo: view.topAnchor),
-            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
+            pokemonTableView.topAnchor.constraint(equalTo: view.topAnchor),
+            pokemonTableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            pokemonTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            pokemonTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
         ])
     }
 

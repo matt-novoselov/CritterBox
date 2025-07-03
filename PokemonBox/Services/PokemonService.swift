@@ -11,80 +11,78 @@ import Foundation
 /// Strings used here are collected in ``PokemonAPIConstants`` for type safety.
 
 
+/// A service layer for fetching Pokémon data from the PokéAPI.
+/// Wraps URLSession and provides paging, detail, name‑set, and type‑map methods.
 class PokemonService {
     private let session: URLSession
     private let cache = NSCache<NSURL, NSData>()
-    private let baseURL = APIConstants.baseURL
+    private let decoder = JSONDecoder()
 
     init(session: URLSession = .shared) {
         self.session = session
     }
 
+    /// Fetches a page of Pokémon (species) and their details.
     func fetchPokemonPage(limit: Int = 20, offset: Int = 0) async throws -> PokemonPage {
-        let listURL = baseURL
-            .appendingPathComponent(APIConstants.Path.pokemonSpecies)
-            .appending(queryItems: [
-                URLQueryItem(name: APIConstants.Query.limit, value: String(limit)),
-                URLQueryItem(name: APIConstants.Query.offset, value: String(offset))
-            ])
-        let data = try await fetchData(from: listURL)
-        let list = try JSONDecoder().decode(PokemonListResponse.self, from: data)
-        var result: [Pokemon] = []
-        for item in list.results {
-            let pokemon = try await fetchPokemon(named: item.name)
-            result.append(pokemon)
+        let list: PokemonListResponse = try await request(PokemonListResponse.self,
+                                                        from: .speciesList(limit: limit, offset: offset))
+        var items = [Pokemon]()
+        for entry in list.results {
+            let pokemon = try await fetchPokemon(named: entry.name)
+            items.append(pokemon)
         }
-        return PokemonPage(totalCount: list.count, items: result)
+        return PokemonPage(totalCount: list.count, items: items)
     }
 
     /// Downloads the list of all Pokemon names.
     /// - Returns: A set of Pokemon names.
+    /// Fetches all Pokémon species names (unlimited limit) as a name set.
     func fetchPokemonNameSet() async throws -> Set<String> {
-        let listURL = baseURL
-            .appendingPathComponent(APIConstants.Path.pokemonSpecies)
-            .appending(queryItems: [URLQueryItem(name: APIConstants.Query.limit, value: APIConstants.Query.limitValue)])
-        let data = try await fetchData(from: listURL)
-        let list = try JSONDecoder().decode(PokemonListResponse.self, from: data)
+        let list: PokemonListResponse = try await request(PokemonListResponse.self,
+                                                        from: .speciesListAll)
         return Set(list.results.map { $0.name })
     }
 
     /// Downloads all pokemon names grouped by type name.
     /// - Returns: A dictionary keyed by type name with an array of pokemon names.
+    /// Fetches all Pokémon grouped by type name.
     func fetchPokemonTypeMap() async throws -> [String: [String]] {
-        let typeListURL = baseURL.appendingPathComponent(APIConstants.Path.type)
-        let data = try await fetchData(from: typeListURL)
-        let list = try JSONDecoder().decode(PokemonTypeListResponse.self, from: data)
-        var result: [String: [String]] = [:]
+        let list: PokemonTypeListResponse = try await request(PokemonTypeListResponse.self,
+                                                           from: .typeList)
+        var map = [String: [String]]()
         try await withThrowingTaskGroup(of: (String, [String]).self) { group in
-            for type in list.results {
+            for entry in list.results {
                 group.addTask {
-                    let detailData = try await self.fetchData(from: type.url)
-                    let detail = try JSONDecoder().decode(PokemonTypeDetailResponse.self, from: detailData)
+                    let detail: PokemonTypeDetailResponse = try await self.request(
+                        PokemonTypeDetailResponse.self,
+                        from: .typeDetail(url: entry.url)
+                    )
                     let names = detail.pokemon.map { $0.pokemon.name }
-                    return (type.name, names)
+                    return (entry.name, names)
                 }
             }
-            for try await (name, names) in group {
-                result[name] = names
+            for try await (type, names) in group {
+                map[type] = names
             }
         }
-        return result
+        return map
     }
 
     func fetchPokemon(named name: String) async throws -> Pokemon {
-        let detailURL = baseURL
-            .appendingPathComponent(APIConstants.Path.pokemon)
-            .appendingPathComponent(name)
-        let detailRaw = try await fetchData(from: detailURL)
-        let detail = try JSONDecoder().decode(PokemonDetailResponse.self, from: detailRaw)
+        let detail: PokemonDetailResponse = try await request(
+            PokemonDetailResponse.self,
+            from: .pokemonDetail(name: name)
+        )
 
         // Skip forms by reloading canonical species if needed
         if detail.name != detail.species.name {
             return try await fetchPokemon(named: detail.species.name)
         }
 
-        let speciesData = try await fetchData(from: detail.species.url)
-        let species = try JSONDecoder().decode(PokemonSpeciesResponse.self, from: speciesData)
+        let species: PokemonSpeciesResponse = try await request(
+            PokemonSpeciesResponse.self,
+            from: .speciesDetail(url: detail.species.url)
+        )
         var flavor = species.flavor_text_entries.first { $0.language.name == "en" }?
             .flavor_text
             .replacingOccurrences(of: "\n", with: " ")
@@ -101,6 +99,14 @@ class PokemonService {
         return Pokemon(name: detail.name, flavorText: flavor, types: types, artworkURL: artwork)
     }
 
+    // MARK: - Networking Helpers
+
+    private func request<T: Decodable>(_ type: T.Type,
+                                       from endpoint: PokemonAPIEndpoint) async throws -> T {
+        let data = try await fetchData(from: endpoint.url)
+        return try decoder.decode(type, from: data)
+    }
+
     private func fetchData(from url: URL) async throws -> Data {
         if let cached = cache.object(forKey: url as NSURL) {
             return cached as Data
@@ -114,10 +120,49 @@ class PokemonService {
     }
 }
 
+/// Helper to append query parameters to a URL.
 private extension URL {
     func appending(queryItems: [URLQueryItem]) -> URL {
         var components = URLComponents(url: self, resolvingAgainstBaseURL: false)!
         components.queryItems = (components.queryItems ?? []) + queryItems
         return components.url!
+    }
+}
+
+/// All PokéAPI endpoints for building request URLs.
+private enum PokemonAPIEndpoint {
+    case speciesList(limit: Int, offset: Int)
+    case speciesListAll
+    case pokemonDetail(name: String)
+    case speciesDetail(url: URL)
+    case typeList
+    case typeDetail(url: URL)
+
+    var url: URL {
+        switch self {
+        case .speciesList(let limit, let offset):
+            return APIConstants.baseURL
+                .appendingPathComponent(APIConstants.Path.pokemonSpecies)
+                .appending(queryItems: [
+                    URLQueryItem(name: APIConstants.Query.limit, value: String(limit)),
+                    URLQueryItem(name: APIConstants.Query.offset, value: String(offset))
+                ])
+        case .speciesListAll:
+            return APIConstants.baseURL
+                .appendingPathComponent(APIConstants.Path.pokemonSpecies)
+                .appending(queryItems: [
+                    URLQueryItem(name: APIConstants.Query.limit, value: APIConstants.Query.limitValue)
+                ])
+        case .pokemonDetail(let name):
+            return APIConstants.baseURL
+                .appendingPathComponent(APIConstants.Path.pokemon)
+                .appendingPathComponent(name)
+        case .speciesDetail(let url):
+            return url
+        case .typeList:
+            return APIConstants.baseURL.appendingPathComponent(APIConstants.Path.type)
+        case .typeDetail(let url):
+            return url
+        }
     }
 }
