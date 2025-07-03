@@ -13,7 +13,8 @@ class MainPageViewController: UIViewController {
     let pokemonTableView = UITableView()
     let refreshControl = UIRefreshControl()
     let searchController = UISearchController(searchResultsController: nil)
-    let unavailableView = UnavailableView()
+    let unavailableView = UnavailableView(title: "No Pokémon Found!",
+                                          message: "Looks like even the tall grass is empty. Try another search.")
     let loadingFooter = UIView()
     let loadingSpinner = UIActivityIndicatorView(style: .medium)
 

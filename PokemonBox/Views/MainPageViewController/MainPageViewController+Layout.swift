@@ -72,10 +72,6 @@ extension MainPageViewController {
     /// Configures the unavailable (empty-state) view.
     func setupUnavailableView() {
         unavailableView.isHidden = true
-        unavailableView.configure(
-            title: "No Pokémon Found!",
-            message: "Looks like even the tall grass is empty. Try another search."
-        )
         view.addSubview(unavailableView)
         NSLayoutConstraint.activate([
             unavailableView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
