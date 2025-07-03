@@ -1,0 +1,87 @@
+//
+//  MainPageViewController+Layout.swift
+//  PokemonBox
+//
+//  Created by Matt Novoselov on 05/07/25.
+//
+
+import UIKit
+
+extension MainPageViewController {
+    /// Configures navigation bar title and search controller.
+    func setupNavigationBar() {
+        let pokemonLabel = UILabel()
+        pokemonLabel.text = "Pokemon"
+        pokemonLabel.font = UIFont.bricolageGrotesque(ofSize: 26, weight: .regular)
+        let boxLabel = UILabel()
+        boxLabel.text = "Box"
+        boxLabel.font = UIFont.bricolageGrotesque(ofSize: 26, weight: .bold)
+
+        let titleStack = UIStackView(arrangedSubviews: [pokemonLabel, boxLabel])
+        navigationItem.titleView = titleStack
+
+        titleStack.isAccessibilityElement = true
+        titleStack.accessibilityTraits = .header
+        titleStack.accessibilityLabel = "Pokemonbox"
+        pokemonLabel.isAccessibilityElement = false
+        boxLabel.isAccessibilityElement = false
+
+        searchController.searchBar.placeholder = "Search name or type"
+        navigationItem.searchController = searchController
+        navigationItem.hidesSearchBarWhenScrolling = false
+        searchController.obscuresBackgroundDuringPresentation = false
+        searchController.searchResultsUpdater = self
+        searchController.searchBar.delegate = self
+    }
+
+    /// Sets up the table view, refresh control, and loading footer.
+    func setupTableView() {
+        tableView.translatesAutoresizingMaskIntoConstraints = false
+        tableView.dataSource = self
+        tableView.delegate = self
+        tableView.register(PokemonCell.self,
+                           forCellReuseIdentifier: PokemonCell.reuseIdentifier)
+        tableView.refreshControl = refreshControl
+        tableView.allowsSelection = false
+        tableView.showsVerticalScrollIndicator = false
+        tableView.tableHeaderView = UIView(frame: .zero)
+
+        loadingSpinner.hidesWhenStopped = true
+        loadingSpinner.translatesAutoresizingMaskIntoConstraints = false
+        loadingFooter.addSubview(loadingSpinner)
+        NSLayoutConstraint.activate([
+            loadingSpinner.centerXAnchor.constraint(equalTo: loadingFooter.centerXAnchor),
+            loadingSpinner.centerYAnchor.constraint(equalTo: loadingFooter.centerYAnchor)
+        ])
+        loadingFooter.frame.size.height = 44
+        tableView.tableFooterView = UIView(frame: .zero)
+
+        refreshControl.addTarget(self,
+                                 action: #selector(didPullToRefresh),
+                                 for: .valueChanged)
+
+        view.addSubview(tableView)
+        NSLayoutConstraint.activate([
+            tableView.topAnchor.constraint(equalTo: view.topAnchor),
+            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
+        ])
+    }
+
+    /// Configures the unavailable (empty-state) view.
+    func setupUnavailableView() {
+        unavailableView.isHidden = true
+        unavailableView.configure(
+            title: "No Pokémon Found!",
+            message: "Looks like even the tall grass is empty. Try another search."
+        )
+        view.addSubview(unavailableView)
+        NSLayoutConstraint.activate([
+            unavailableView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            unavailableView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            unavailableView.leadingAnchor.constraint(greaterThanOrEqualTo: view.leadingAnchor, constant: 16),
+            unavailableView.trailingAnchor.constraint(lessThanOrEqualTo: view.trailingAnchor, constant: -16)
+        ])
+    }
+}
