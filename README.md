@@ -10,9 +10,10 @@ list of Pokémon and returns their main details:
 - `types`
 - `artworkURL`
 
-When the app launches, the main view controller fetches the first page of
-Pokémon (20 items) using `PokemonService` and displays them in a list. As the
-user scrolls to the bottom, additional pages are automatically loaded.
+When the app launches, the main view controller binds to a `MainPageViewModel`,
+which uses `PokemonService` to fetch the first page of Pokémon (20 items) and
+manages paging and search state. As the user scrolls to the bottom or performs
+a search, additional pages are automatically loaded.
 
 See [PokéAPI documentation](https://pokeapi.co/docs/v2) for the REST API
 endpoints.

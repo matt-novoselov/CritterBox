@@ -7,17 +7,9 @@
 
 import UIKit
 
-fileprivate let pageSize = 20
-
 class MainPageViewController: UIViewController {
-
+    private let viewModel = MainPageViewModel()
     private var pokemons = [Pokemon]()
-    private var totalCount: Int?
-    private var isLoading = false
-    private var pokemonNameMap = Set<String>()
-    private var pokemonTypeMap = [String: [String]]()
-    private var filteredNames = [String]()
-    private var searchOffset = 0
     private let tableView = UITableView()
     private let refreshControl = UIRefreshControl()
     private let searchController = UISearchController(searchResultsController: nil)
@@ -69,7 +61,7 @@ class MainPageViewController: UIViewController {
         ])
         loadingFooter.frame.size.height = 44
         tableView.tableFooterView = UIView(frame: .zero)
-        refreshControl.addTarget(self, action: #selector(refreshPokemons), for: .valueChanged)
+        refreshControl.addTarget(self, action: #selector(didPullToRefresh), for: .valueChanged)
         
         view.addSubview(tableView)
         NSLayoutConstraint.activate([
@@ -89,57 +81,10 @@ class MainPageViewController: UIViewController {
             unavailableView.trailingAnchor.constraint(lessThanOrEqualTo: view.trailingAnchor, constant: -16)
         ])
 
-        Task {
-            do {
-                let service = PokemonService()
-                async let names = service.fetchPokemonNameSet()
-                async let types = service.fetchPokemonTypeMap()
-                pokemonNameMap = try await names
-                pokemonTypeMap = try await types
-            } catch {
-                print("Failed to prefetch names or types: \(error)")
-            }
-        }
-
-        loadNextPage(reset: true)
+        bindViewModel()
+        viewModel.refresh()
     }
 
-    @objc private func refreshPokemons() {
-        loadNextPage(reset: true)
-    }
-
-    private func loadNextPage(reset: Bool = false) {
-        guard !isLoading else { return }
-        isLoading = true
-        if reset {
-            totalCount = nil
-            pokemons.removeAll()
-            tableView.reloadData()
-        } else {
-            showLoadingFooter()
-        }
-        Task {
-            if reset {
-                refreshControl.beginRefreshing()
-            }
-            do {
-                let service = PokemonService()
-                let page = try await service.fetchPokemonPage(limit: pageSize, offset: pokemons.count)
-                if totalCount == nil {
-                    totalCount = page.totalCount
-                }
-                pokemons += page.items
-                tableView.reloadData()
-            } catch {
-                print("Failed to fetch pokemons: \(error)")
-            }
-            isLoading = false
-            hideLoadingFooter()
-            if reset {
-                refreshControl.endRefreshing()
-            }
-        }
-    }
 }
 
 extension MainPageViewController: UITableViewDataSource {
@@ -171,86 +116,50 @@ extension MainPageViewController: UITableViewDelegate {
 
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         if indexPath.section == pokemons.count - 4 {
-            if searchController.isActive && !(searchController.searchBar.text?.isEmpty ?? true) {
-                loadNextSearchPage()
-            } else {
-                if let total = totalCount {
-                    if pokemons.count < total {
-                        loadNextPage()
-                    }
-                } else {
-                    loadNextPage()
-                }
-            }
+            viewModel.loadNextPage()
         }
     }
 }
 
 extension MainPageViewController: UISearchResultsUpdating {
     func updateSearchResults(for searchController: UISearchController) {
-        guard let text = searchController.searchBar.text?.lowercased(), !text.isEmpty else {
-            if !filteredNames.isEmpty {
-                cancelSearch()
-            }
-            unavailableView.isHidden = true
-            return
-        }
-        let matchedTypeNames = pokemonTypeMap
-            .filter { $0.key.localizedCaseInsensitiveContains(text) }
-            .flatMap { $0.value }
-        let validTypeNames = matchedTypeNames.filter { pokemonNameMap.contains($0) }
-        if validTypeNames.isEmpty {
-            filteredNames = pokemonNameMap.filter { $0.localizedCaseInsensitiveContains(text) }
-        } else {
-            filteredNames = Array(Set(validTypeNames))
-        }
-        searchOffset = 0
-        pokemons.removeAll()
-        tableView.reloadData()
-        if filteredNames.isEmpty {
-            unavailableView.isHidden = false
-        } else {
-            unavailableView.isHidden = true
-            loadNextSearchPage()
-        }
+        viewModel.updateSearch(text: searchController.searchBar.text ?? "")
     }
 }
 
 private extension MainPageViewController {
-    func cancelSearch() {
-        filteredNames.removeAll()
-        searchOffset = 0
-        loadNextPage(reset: true)
-        unavailableView.isHidden = true
+    @objc func didPullToRefresh() {
+        refreshControl.beginRefreshing()
+        viewModel.refresh()
     }
 
-    func loadNextSearchPage() {
-        guard !isLoading, searchOffset < filteredNames.count else { return }
-        isLoading = true
-        showLoadingFooter()
-        let names = filteredNames[searchOffset..<min(searchOffset + pageSize, filteredNames.count)]
-        searchOffset += names.count
-        Task {
-            do {
-                let service = PokemonService()
-                let pagePokemons = try await withThrowingTaskGroup(of: Pokemon.self) { group in
-                    for name in names {
-                        group.addTask { try await service.fetchPokemon(named: name) }
-                    }
-                    var result: [Pokemon] = []
-                    for try await pokemon in group {
-                        result.append(pokemon)
-                    }
-                    return result
-                }
-                pokemons.append(contentsOf: pagePokemons)
-                tableView.reloadData()
-                unavailableView.isHidden = pokemons.isEmpty ? false : true
-            } catch {
-                print("Failed to fetch search results: \(error) for \(names)")
+    func bindViewModel() {
+        viewModel.onPokemonsChange = { [weak self] items in
+            DispatchQueue.main.async {
+                self?.pokemons = items
+                self?.tableView.reloadData()
             }
-            isLoading = false
-            hideLoadingFooter()
+        }
+
+        viewModel.onLoadingChange = { [weak self] loading in
+            DispatchQueue.main.async {
+                if loading {
+                    if !(self?.refreshControl.isRefreshing ?? false) {
+                        self?.showLoadingFooter()
+                    }
+                } else {
+                    self?.hideLoadingFooter()
+                    if self?.refreshControl.isRefreshing ?? false {
+                        self?.refreshControl.endRefreshing()
+                    }
+                }
+            }
+        }
+
+        viewModel.onEmptyStateChange = { [weak self] empty in
+            DispatchQueue.main.async {
+                self?.unavailableView.isHidden = !empty
+            }
         }
     }
 
@@ -268,6 +177,6 @@ private extension MainPageViewController {
 
 extension MainPageViewController: UISearchBarDelegate {
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
-        cancelSearch()
+        viewModel.updateSearch(text: "")
     }
 }
