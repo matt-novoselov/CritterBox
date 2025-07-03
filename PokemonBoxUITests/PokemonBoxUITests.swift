@@ -8,32 +8,61 @@
 import XCTest
 
 final class PokemonBoxUITests: XCTestCase {
+    var app: XCUIApplication!
 
     override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
-
-        // In UI tests it is usually best to stop immediately when a failure occurs.
         continueAfterFailure = false
-
-        // In UI tests it’s important to set the initial state - such as interface orientation - required for your tests before they run. The setUp method is a good place to do this.
+        app = XCUIApplication()
+        app.launchArguments += ["-UITestsDisableAnimations"]
+        app.launch()
     }
 
     override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
+        app.terminate()
+        app = nil
     }
 
     @MainActor
-    func testExample() throws {
-        // UI tests must launch the application that they test.
-        let app = XCUIApplication()
-        app.launch()
+    func testInitialLoadShowsFirstPokemon() throws {
+        XCTAssertTrue(app.staticTexts["Bulbasaur"].waitForExistence(timeout: 10))
+    }
 
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
+    @MainActor
+    func testPullToRefreshMaintainsList() throws {
+        let table = app.tables.element(boundBy: 0)
+        table.swipeDown()
+        XCTAssertTrue(app.staticTexts["Bulbasaur"].waitForExistence(timeout: 10))
+    }
+
+    @MainActor
+    func testInfiniteScrollLoadsMorePokemons() throws {
+        XCTAssertTrue(app.staticTexts["Bulbasaur"].waitForExistence(timeout: 10))
+        let table = app.tables.element(boundBy: 0)
+        for _ in 0..<10 where !app.staticTexts["Spearow"].exists {
+            table.swipeUp()
+        }
+        XCTAssertTrue(app.staticTexts["Spearow"].waitForExistence(timeout: 10))
+    }
+
+    @MainActor
+    func testSearchByNameShowsPokemonsMatchingName() throws {
+        let searchField = app.searchFields["Search name or type"]
+        XCTAssertTrue(searchField.waitForExistence(timeout: 5))
+        searchField.tap()
+        searchField.typeText("pikachu")
+        XCTAssertTrue(app.staticTexts["Pikachu"].waitForExistence(timeout: 10))
+    }
+
+    @MainActor
+    func testSearchByTypeShowsPokemonsMatchingType() throws {
+        let searchField = app.searchFields["Search name or type"]
+        searchField.tap()
+        searchField.typeText("electric")
+        XCTAssertTrue(app.staticTexts["Pikachu"].waitForExistence(timeout: 10))
     }
 
     @MainActor
     func testLaunchPerformance() throws {
-        // This measures how long it takes to launch your application.
         measure(metrics: [XCTApplicationLaunchMetric()]) {
             XCUIApplication().launch()
         }
