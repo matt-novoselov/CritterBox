@@ -5,7 +5,6 @@
 //  Created by Matt Novoselov on 02/07/25.
 //
 
-
 import UIKit
 
 /// A view used when search returns no results.
@@ -78,11 +77,11 @@ final class UnavailableView: UIView {
     private func setupView() {
         translatesAutoresizingMaskIntoConstraints = false
         addSubview(stackView)
-        
+
         NSLayoutConstraint.activate([
             imageView.heightAnchor.constraint(lessThanOrEqualToConstant: 80),
             imageView.widthAnchor.constraint(lessThanOrEqualToConstant: 80),
-            
+
             stackView.centerXAnchor.constraint(equalTo: centerXAnchor),
             stackView.centerYAnchor.constraint(equalTo: centerYAnchor),
             stackView.leadingAnchor.constraint(greaterThanOrEqualTo: leadingAnchor, constant: 16),

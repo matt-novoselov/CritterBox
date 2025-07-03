@@ -15,4 +15,3 @@ final class ImageCache {
         cache.setObject(image, forKey: url as NSURL)
     }
 }
-
