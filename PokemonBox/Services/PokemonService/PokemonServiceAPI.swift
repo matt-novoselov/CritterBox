@@ -1,12 +1,20 @@
 //
-//  PokemonAPIEndpoint.swift
+//  PokemonServiceAPI.swift
 //  PokemonBox
 //
-//  Created by Matt Novoselov on 03/07/25.
+//  Created by Matt Novoselov on 05/07/25.
 //
 
 import Foundation
 
+/// Helper to append query parameters to a URL.
+private extension URL {
+    func appending(queryItems: [URLQueryItem]) -> URL {
+        var components = URLComponents(url: self, resolvingAgainstBaseURL: false)!
+        components.queryItems = (components.queryItems ?? []) + queryItems
+        return components.url!
+    }
+}
 
 /// All PokéAPI endpoints for building request URLs.
 enum PokemonAPIEndpoint {
@@ -36,12 +44,10 @@ enum PokemonAPIEndpoint {
             return APIConstants.baseURL
                 .appendingPathComponent(APIConstants.Path.pokemon)
                 .appendingPathComponent(name)
-        case .speciesDetail(let url):
+        case .speciesDetail(let url), .typeDetail(let url):
             return url
         case .typeList:
             return APIConstants.baseURL.appendingPathComponent(APIConstants.Path.type)
-        case .typeDetail(let url):
-            return url
         }
     }
 }
