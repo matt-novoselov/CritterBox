@@ -38,7 +38,7 @@ final class MainPageViewModel {
     /// Called when the empty-state (no results) state changes.
     var onEmptyStateChange: ((Bool) -> Void)?
 
-    init(service: PokemonService = PokemonService(), pageSize: Int = 20) {
+    init(service: PokemonService = PokemonService(), pageSize: Int = AppConstants.pageLimit) {
         self.service = service
         self.pageSize = pageSize
         Task {
