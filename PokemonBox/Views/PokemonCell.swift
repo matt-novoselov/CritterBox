@@ -37,10 +37,16 @@ class PokemonCell: UITableViewCell {
 
     func configure(with viewModel: PokemonCellViewModel) {
         nameLabel.text = viewModel.name
+        let headline = UIFont.preferredFont(forTextStyle: .headline)
+        nameLabel.font = UIFont.bricolageGrotesque(ofSize: headline.pointSize, weight: .bold)
         flavorLabel.text = viewModel.flavorText
+        flavorLabel.font = .preferredFont(forTextStyle: .body)
+        flavorLabel.textColor = .secondaryLabel
+        flavorLabel.numberOfLines = 0
         isAccessibilityElement = true
         accessibilityLabel = viewModel.accessibilityLabel
 
+        typesStackView.spacing = Layout.cellElementSpacing
         typesStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
         for type in viewModel.types {
             let label = PaddingLabel()
