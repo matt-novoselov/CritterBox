@@ -39,6 +39,12 @@ class MainPageViewController: UIViewController {
 
         let titleStack = UIStackView(arrangedSubviews: [pokemonLabel, boxLabel])
         navigationItem.titleView = titleStack
+
+        titleStack.isAccessibilityElement = true
+        titleStack.accessibilityTraits = .header
+        titleStack.accessibilityLabel = "Pokemonbox"
+        pokemonLabel.isAccessibilityElement = false
+        boxLabel.isAccessibilityElement = false
         searchController.searchBar.placeholder = "Search name or type"
         navigationItem.searchController = searchController
         navigationItem.hidesSearchBarWhenScrolling = false
