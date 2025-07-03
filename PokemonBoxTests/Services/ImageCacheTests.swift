@@ -5,6 +5,7 @@ import UIKit
 
 @Suite("ImageCache Tests")
 struct ImageCacheTests {
+    
     @Test("image(for:) returns nil when no image has been inserted")
     func returnsNilWhenMissing() {
         let url = URL(string: "https://example.com/missing")!
