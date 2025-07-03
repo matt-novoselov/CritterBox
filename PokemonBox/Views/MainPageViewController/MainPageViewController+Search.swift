@@ -7,6 +7,7 @@
 
 import UIKit
 
+// MARK: - UISearchResultsUpdating
 extension MainPageViewController: UISearchResultsUpdating {
     func updateSearchResults(for searchController: UISearchController) {
         viewModel.updateSearch(text: searchController.searchBar.text ?? "")

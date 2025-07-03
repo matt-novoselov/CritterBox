@@ -13,6 +13,7 @@ extension MainPageViewController {
         viewModel.refresh()
     }
 
+    /// Sets up bindings between the view and the view model.
     func bindViewModel() {
         viewModel.onPokemonsChange = { [weak self] items in
             DispatchQueue.main.async {

@@ -7,6 +7,7 @@
 
 import UIKit
 
+// A table view cell for displaying a single Pokémon with its details.
 class PokemonCell: UITableViewCell {
     static let reuseIdentifier = "PokemonCell"
 
@@ -35,6 +36,8 @@ class PokemonCell: UITableViewCell {
         spinner.startAnimating()
     }
 
+    /// Configures the cell with data from a view model.
+    /// - Parameter viewModel: The view model containing the Pokémon's information.
     func configure(with viewModel: PokemonCellViewModel) {
         nameLabel.text = viewModel.name
         let headline = UIFont.preferredFont(forTextStyle: .headline)
@@ -104,6 +107,8 @@ private extension PokemonCell {
         ])
     }
 
+    /// Asynchronously loads the Pokémon's artwork from a URL, with caching.
+    /// - Parameter url: The URL of the artwork image.
     func loadArtwork(from url: URL?) {
         imageLoadTask?.cancel()
         artworkImageView.image = nil

@@ -7,6 +7,7 @@
 
 import UIKit
 
+// MARK: - UITableViewDataSource
 extension MainPageViewController: UITableViewDataSource {
     func numberOfSections(in tableView: UITableView) -> Int {
         return pokemons.count

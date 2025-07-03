@@ -7,6 +7,7 @@
 
 import UIKit
 
+// The main view controller for displaying the list of Pokémon.
 class MainPageViewController: UIViewController {
     let viewModel = MainPageViewModel()
     var pokemons = [Pokemon]()

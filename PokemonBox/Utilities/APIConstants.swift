@@ -1,5 +1,6 @@
 import Foundation
 
+// Constants used for interacting with the PokéAPI.
 enum APIConstants {
     static let baseURL = URL(string: "https://pokeapi.co/api/v2")!
 

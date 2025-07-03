@@ -7,14 +7,12 @@
 
 import Foundation
 
-/// Constants for building requests to the PokeAPI.
-/// Strings used here are collected in ``PokemonAPIConstants`` for type safety.
-
-
-/// A service layer for fetching Pokémon data from the PokéAPI.
-/// Wraps URLSession and provides paging, detail, name‑set, and type‑map methods.
-/// A service layer for fetching Pokémon data from the PokéAPI.
-/// Wraps URLSession to expose paging, name‑set, type‑map, and detail APIs.
+/// A service that interacts with the PokéAPI to fetch Pokémon data.
+///
+/// This class provides methods for fetching lists of Pokémon with pagination,
+/// retrieving detailed information for a specific Pokémon, and obtaining
+/// collections of all Pokémon names and their associated types.
+/// It also includes a simple caching mechanism to reduce network requests.
 class PokemonService {
     let session: URLSession
     let cache = NSCache<NSURL, NSData>()
