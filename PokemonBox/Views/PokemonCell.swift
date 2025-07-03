@@ -94,6 +94,18 @@ class PokemonCell: UITableViewCell {
             typesStackView.addArrangedSubview(label)
         }
         flavorLabel.text = pokemon.flavorText
+
+        isAccessibilityElement = true
+        artworkImageView.isAccessibilityElement = false
+        spinner.isAccessibilityElement = false
+        nameLabel.isAccessibilityElement = false
+        typesStackView.isAccessibilityElement = false
+        flavorLabel.isAccessibilityElement = false
+        let name = pokemon.name.capitalized
+        let typesText = pokemon.types.map { $0.capitalized }.joined(separator: ", ")
+        let description = pokemon.flavorText ?? "No description provided"
+        accessibilityLabel = "\(name), types: \(typesText). \(description)"
+        
         if let url = pokemon.artworkURL {
             spinner.startAnimating()
             if let cached = ImageCache.shared.image(for: url) {

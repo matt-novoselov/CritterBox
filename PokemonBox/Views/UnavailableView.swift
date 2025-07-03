@@ -50,6 +50,12 @@ final class UnavailableView: UIView {
         stack.spacing = 12
         stack.translatesAutoresizingMaskIntoConstraints = false
 
+        imageView.isAccessibilityElement = false
+        titleLabel.isAccessibilityElement = true
+        titleLabel.accessibilityTraits = .header
+        messageLabel.isAccessibilityElement = true
+        messageLabel.accessibilityTraits = .staticText
+
         addSubview(stack)
         NSLayoutConstraint.activate([
             stack.centerXAnchor.constraint(equalTo: centerXAnchor),
