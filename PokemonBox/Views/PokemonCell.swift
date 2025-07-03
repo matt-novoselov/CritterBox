@@ -16,35 +16,65 @@ class PokemonCell: UITableViewCell {
     private let typesStackView = UIStackView()
     private let flavorLabel = UILabel()
 
-    private var task: Task<Void, Never>?
+    private var imageLoadTask: Task<Void, Never>?
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
+        setupViews()
+        setupConstraints()
+    }
 
-        artworkImageView.translatesAutoresizingMaskIntoConstraints = false
-        artworkImageView.contentMode = .scaleAspectFit
-        spinner.translatesAutoresizingMaskIntoConstraints = false
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
 
-        nameLabel.translatesAutoresizingMaskIntoConstraints = false
-        let headline = UIFont.preferredFont(forTextStyle: .headline)
-        nameLabel.font = UIFont.bricolageGrotesque(ofSize: headline.pointSize, weight: .bold)
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        imageLoadTask?.cancel()
+        artworkImageView.image = nil
+        spinner.startAnimating()
+    }
 
-        typesStackView.translatesAutoresizingMaskIntoConstraints = false
-        typesStackView.spacing = 4
+    func configure(with viewModel: PokemonCellViewModel) {
+        nameLabel.text = viewModel.name
+        flavorLabel.text = viewModel.flavorText
+        isAccessibilityElement = true
+        accessibilityLabel = viewModel.accessibilityLabel
 
-        flavorLabel.translatesAutoresizingMaskIntoConstraints = false
-        flavorLabel.font = .preferredFont(forTextStyle: .body)
-        flavorLabel.textColor = .secondaryLabel
-        flavorLabel.numberOfLines = 0
+        typesStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        for type in viewModel.types {
+            let label = PaddingLabel()
+            label.text = type
+            let base = UIFont.preferredFont(forTextStyle: .caption1)
+            label.font = .boldSystemFont(ofSize: base.pointSize + 2)
+            label.textColor = .secondaryLabel
+            label.backgroundColor = .systemGray5
+            label.layer.cornerRadius = 4
+            label.layer.masksToBounds = true
+            typesStackView.addArrangedSubview(label)
+        }
 
+        loadArtwork(from: viewModel.artworkURL)
+    }
+}
+
+// MARK: - View Lifecycle Helpers
+private extension PokemonCell {
+    func setupViews() {
         selectionStyle = .none
-        contentView.addSubview(artworkImageView)
+        artworkImageView.contentMode = .scaleAspectFit
+
+        [artworkImageView, nameLabel, typesStackView, flavorLabel].forEach {
+            $0.translatesAutoresizingMaskIntoConstraints = false
+            contentView.addSubview($0)
+        }
+
+        spinner.translatesAutoresizingMaskIntoConstraints = false
         artworkImageView.addSubview(spinner)
         spinner.startAnimating()
-        contentView.addSubview(nameLabel)
-        contentView.addSubview(typesStackView)
-        contentView.addSubview(flavorLabel)
+    }
 
+    func setupConstraints() {
         NSLayoutConstraint.activate([
             artworkImageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 8),
             artworkImageView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 20),
@@ -68,66 +98,33 @@ class PokemonCell: UITableViewCell {
         ])
     }
 
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
-    override func prepareForReuse() {
-        super.prepareForReuse()
-        task?.cancel()
+    func loadArtwork(from url: URL?) {
+        imageLoadTask?.cancel()
         artworkImageView.image = nil
-        spinner.startAnimating()
-    }
-
-    func configure(with pokemon: Pokemon) {
-        nameLabel.text = pokemon.name.capitalized
-        typesStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
-        for type in pokemon.types {
-            let label = PaddingLabel()
-            label.text = type.capitalized
-            let base = UIFont.preferredFont(forTextStyle: .caption1)
-            label.font = .boldSystemFont(ofSize: base.pointSize + 2)
-            label.textColor = .secondaryLabel
-            label.backgroundColor = .systemGray5
-            label.layer.cornerRadius = 4
-            label.layer.masksToBounds = true
-            typesStackView.addArrangedSubview(label)
+        guard let url = url else {
+            spinner.stopAnimating()
+            return
         }
-        flavorLabel.text = pokemon.flavorText
-
-        isAccessibilityElement = true
-        artworkImageView.isAccessibilityElement = false
-        spinner.isAccessibilityElement = false
-        nameLabel.isAccessibilityElement = false
-        typesStackView.isAccessibilityElement = false
-        flavorLabel.isAccessibilityElement = false
-        let name = pokemon.name.capitalized
-        let typesText = pokemon.types.map { $0.capitalized }.joined(separator: ", ")
-        let description = pokemon.flavorText ?? "No description provided"
-        accessibilityLabel = "\(name), types: \(typesText). \(description)"
-        
-        if let url = pokemon.artworkURL {
-            spinner.startAnimating()
-            if let cached = ImageCache.shared.image(for: url) {
-                artworkImageView.image = cached
-                spinner.stopAnimating()
-            } else {
-                task = Task {
-                    do {
-                        let (data, _) = try await URLSession.shared.data(from: url)
-                        if !Task.isCancelled, let image = UIImage(data: data) {
-                            ImageCache.shared.insertImage(image, for: url)
-                            artworkImageView.image = image
-                        }
-                        spinner.stopAnimating()
-                    } catch {
-                        // ignore loading errors
-                        spinner.stopAnimating()
+        spinner.startAnimating()
+        if let cached = ImageCache.shared.image(for: url) {
+            artworkImageView.image = cached
+            spinner.stopAnimating()
+        } else {
+            imageLoadTask = Task {
+                do {
+                    let (data, _) = try await URLSession.shared.data(from: url)
+                    guard !Task.isCancelled, let image = UIImage(data: data) else { return }
+                    ImageCache.shared.insertImage(image, for: url)
+                    DispatchQueue.main.async {
+                        self.artworkImageView.image = image
                     }
+                } catch {
+                    // ignore loading errors
+                }
+                DispatchQueue.main.async {
+                    self.spinner.stopAnimating()
                 }
             }
-        } else {
-            spinner.stopAnimating()
         }
     }
 }

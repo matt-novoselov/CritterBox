@@ -22,7 +22,7 @@ extension MainPageViewController {
 
         titleStack.isAccessibilityElement = true
         titleStack.accessibilityTraits = .header
-        titleStack.accessibilityLabel = "Pokemonbox"
+        titleStack.accessibilityLabel = "PokemonBox"
         pokemonLabel.isAccessibilityElement = false
         boxLabel.isAccessibilityElement = false
 

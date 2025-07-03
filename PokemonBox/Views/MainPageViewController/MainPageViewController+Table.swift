@@ -22,7 +22,8 @@ extension MainPageViewController: UITableViewDataSource {
             withIdentifier: PokemonCell.reuseIdentifier,
             for: indexPath
         ) as! PokemonCell
-        cell.configure(with: pokemons[indexPath.section])
+        let cellViewModel = PokemonCellViewModel(pokemon: pokemons[indexPath.section])
+        cell.configure(with: cellViewModel)
         return cell
     }
 }
