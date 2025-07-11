@@ -17,8 +17,8 @@ class PokemonCell: UITableViewCell {
     private let flavorLabel = UILabel()
     
     // Stack views for layout
-    private let mainStackView = UIStackView()
-    private let rightStackView = UIStackView()
+    private let horizontalStackView = UIStackView()
+    private let verticalStackView = UIStackView()
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -76,23 +76,23 @@ private extension PokemonCell {
     func setupViews() {
         selectionStyle = .none
 
-        // Configure right stack view for vertical layout of labels
-        rightStackView.axis = .vertical
-        rightStackView.spacing = Layout.cellElementSpacing
-        rightStackView.alignment = .leading
-        rightStackView.addArrangedSubview(nameLabel)
-        rightStackView.addArrangedSubview(typesStackView)
-        rightStackView.addArrangedSubview(flavorLabel)
+        // Configure vertical stack view for vertical layout of labels
+        verticalStackView.axis = .vertical
+        verticalStackView.spacing = Layout.cellElementSpacing
+        verticalStackView.alignment = .leading
+        verticalStackView.addArrangedSubview(nameLabel)
+        verticalStackView.addArrangedSubview(typesStackView)
+        verticalStackView.addArrangedSubview(flavorLabel)
 
-        // Configure main stack view for horizontal layout of image and right stack
-        mainStackView.axis = .horizontal
-        mainStackView.spacing = Layout.horizontalInset
-        mainStackView.alignment = .top
-        mainStackView.addArrangedSubview(artworkView)
-        mainStackView.addArrangedSubview(rightStackView)
+        // Configure horizontal stack view for horizontal layout of image and vertical stack
+        horizontalStackView.axis = .horizontal
+        horizontalStackView.spacing = Layout.horizontalInset
+        horizontalStackView.alignment = .top
+        horizontalStackView.addArrangedSubview(artworkView)
+        horizontalStackView.addArrangedSubview(verticalStackView)
         
-        mainStackView.translatesAutoresizingMaskIntoConstraints = false
-        contentView.addSubview(mainStackView)
+        horizontalStackView.translatesAutoresizingMaskIntoConstraints = false
+        contentView.addSubview(horizontalStackView)
     }
 
     func setupConstraints() {
@@ -101,11 +101,11 @@ private extension PokemonCell {
             artworkView.widthAnchor.constraint(equalToConstant: Layout.cellImageSize),
             artworkView.heightAnchor.constraint(equalToConstant: Layout.cellImageSize),
             
-            // Pin main stack view to the content view's margins with vertical insets
-            mainStackView.leadingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.leadingAnchor),
-            mainStackView.trailingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.trailingAnchor),
-            mainStackView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: Layout.cellInset),
-            mainStackView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -Layout.cellInset)
+            // Pin horizontal stack view to the content view's margins with vertical insets
+            horizontalStackView.leadingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.leadingAnchor),
+            horizontalStackView.trailingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.trailingAnchor),
+            horizontalStackView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: Layout.cellInset),
+            horizontalStackView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -Layout.cellInset)
         ])
     }
 
