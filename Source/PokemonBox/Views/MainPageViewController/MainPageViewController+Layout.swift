@@ -76,8 +76,8 @@ extension MainPageViewController {
         NSLayoutConstraint.activate([
             unavailableView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             unavailableView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
-            unavailableView.leadingAnchor.constraint(greaterThanOrEqualTo: view.leadingAnchor, constant: 16),
-            unavailableView.trailingAnchor.constraint(lessThanOrEqualTo: view.trailingAnchor, constant: -16)
+            unavailableView.leadingAnchor.constraint(greaterThanOrEqualTo: view.leadingAnchor, constant: Layout.horizontalInset),
+            unavailableView.trailingAnchor.constraint(lessThanOrEqualTo: view.trailingAnchor, constant: -Layout.horizontalInset)
         ])
     }
 }
