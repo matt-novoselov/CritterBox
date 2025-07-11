@@ -9,13 +9,29 @@ import Foundation
 
 /// Detailed information response for a single Pokémon.
 struct PokemonDetailResponse: Decodable {
-    struct TypeEntry: Decodable {
-        let type: NamedAPIResource
-    }
+    let name: String
+    let types: [TypeEntry]
+    let species: Species
+    let sprites: Sprites
+}
+
+// Extension for local Species struct
+extension PokemonDetailResponse {
     struct Species: Decodable {
         let name: String
         let url: URL
     }
+}
+
+// Extension for local TypeEntry struct
+extension PokemonDetailResponse {
+    struct TypeEntry: Decodable {
+        let type: NamedAPIResource
+    }
+}
+
+// Extension for local Sprites struct
+extension PokemonDetailResponse {
     struct Sprites: Decodable {
         struct Other: Decodable {
             struct OfficialArtwork: Decodable {
@@ -28,8 +44,4 @@ struct PokemonDetailResponse: Decodable {
         }
         let other: Other
     }
-    let name: String
-    let types: [TypeEntry]
-    let species: Species
-    let sprites: Sprites
 }
