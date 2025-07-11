@@ -11,13 +11,10 @@ import UIKit
 class PokemonCell: UITableViewCell {
     static let reuseIdentifier = "PokemonCell"
 
-    private let artworkImageView = UIImageView()
-    private let spinner = UIActivityIndicatorView(style: .large)
+    private let artworkView = ArtworkImageView()
     private let nameLabel = UILabel()
     private let typesStackView = UIStackView()
     private let flavorLabel = UILabel()
-
-    private var imageLoadTask: Task<Void, Never>?
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -31,9 +28,7 @@ class PokemonCell: UITableViewCell {
 
     override func prepareForReuse() {
         super.prepareForReuse()
-        imageLoadTask?.cancel()
-        artworkImageView.image = nil
-        spinner.startAnimating()
+        artworkView.prepareForReuse()
     }
 
     /// Configures the cell with data from a view model.
@@ -63,7 +58,7 @@ class PokemonCell: UITableViewCell {
             typesStackView.addArrangedSubview(label)
         }
 
-        loadArtwork(from: viewModel.artworkURL)
+        artworkView.loadImage(from: viewModel.artworkURL)
     }
 }
 
@@ -71,29 +66,22 @@ class PokemonCell: UITableViewCell {
 private extension PokemonCell {
     func setupViews() {
         selectionStyle = .none
-        artworkImageView.contentMode = .scaleAspectFit
 
-        [artworkImageView, nameLabel, typesStackView, flavorLabel].forEach {
+        [artworkView, nameLabel, typesStackView, flavorLabel].forEach {
             $0.translatesAutoresizingMaskIntoConstraints = false
             contentView.addSubview($0)
         }
-
-        spinner.translatesAutoresizingMaskIntoConstraints = false
-        artworkImageView.addSubview(spinner)
-        spinner.startAnimating()
     }
 
     func setupConstraints() {
         NSLayoutConstraint.activate([
-            artworkImageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: Layout.cellImageLeading),
-            artworkImageView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: Layout.cellInset),
-            artworkImageView.widthAnchor.constraint(equalToConstant: Layout.cellImageSize),
-            artworkImageView.heightAnchor.constraint(equalToConstant: Layout.cellImageSize),
-            spinner.centerXAnchor.constraint(equalTo: artworkImageView.centerXAnchor),
-            spinner.centerYAnchor.constraint(equalTo: artworkImageView.centerYAnchor),
+            artworkView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: Layout.cellImageLeading),
+            artworkView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: Layout.cellInset),
+            artworkView.widthAnchor.constraint(equalToConstant: Layout.cellImageSize),
+            artworkView.heightAnchor.constraint(equalToConstant: Layout.cellImageSize),
 
-            nameLabel.leadingAnchor.constraint(equalTo: artworkImageView.trailingAnchor, constant: Layout.horizontalInset),
-            nameLabel.topAnchor.constraint(equalTo: artworkImageView.topAnchor),
+            nameLabel.leadingAnchor.constraint(equalTo: artworkView.trailingAnchor, constant: Layout.horizontalInset),
+            nameLabel.topAnchor.constraint(equalTo: artworkView.topAnchor),
             nameLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -Layout.horizontalInset),
 
             typesStackView.leadingAnchor.constraint(equalTo: nameLabel.leadingAnchor),
@@ -107,35 +95,4 @@ private extension PokemonCell {
         ])
     }
 
-    /// Asynchronously loads the Pokémon's artwork from a URL, with caching.
-    /// - Parameter url: The URL of the artwork image.
-    func loadArtwork(from url: URL?) {
-        imageLoadTask?.cancel()
-        artworkImageView.image = nil
-        guard let url = url else {
-            spinner.stopAnimating()
-            return
-        }
-        spinner.startAnimating()
-        if let cached = ImageCache.shared.image(for: url) {
-            artworkImageView.image = cached
-            spinner.stopAnimating()
-        } else {
-            imageLoadTask = Task {
-                do {
-                    let (data, _) = try await URLSession.shared.data(from: url)
-                    guard !Task.isCancelled, let image = UIImage(data: data) else { return }
-                    ImageCache.shared.insertImage(image, for: url)
-                    DispatchQueue.main.async {
-                        self.artworkImageView.image = image
-                    }
-                } catch {
-                    print("Artwork loading error: \(error)")
-                }
-                DispatchQueue.main.async {
-                    self.spinner.stopAnimating()
-                }
-            }
-        }
-    }
 }
