@@ -10,7 +10,7 @@ import Foundation
 extension MainPageViewModel {
     /// Updates search text, resets paging, and triggers new fetch if needed.
     func updateSearch(text: String) {
-        currentSearchText = text.lowercased()
+        currentSearchText = text
         guard !currentSearchText.isEmpty else {
             isEmptyState = false
             pokemons = []
