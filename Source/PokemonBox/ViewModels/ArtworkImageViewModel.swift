@@ -19,29 +19,37 @@ final class ArtworkImageViewModel {
                 completion(cached)
             }
         } else {
-            loadTask = Task {
-                do {
-                    let (data, _) = try await URLSession.shared.data(from: url)
-                    guard !Task.isCancelled else { return }
-                    let image = UIImage(data: data)
-                    if let image {
-                        ImageCache.shared.insertImage(image, for: url)
-                    }
-                    await MainActor.run { completion(image) }
-                } catch {
-                    await MainActor.run { completion(nil) }
-                    guard let urlError = error as? URLError else {
-                        print("Unknown artwork loading error: \(error)")
-                        return
-                    }
-                    switch urlError.code {
-                    case .cancelled:
-                        print("Artwork loading cancelled.")
-                    default:
-                        print("Artwork loading error: \(error)")
-                    }
+            loadNotCachedImage(url: url, completion: completion)
+        }
+    }
+    
+    private func loadNotCachedImage(url: URL, completion: @escaping (UIImage?) -> Void) {
+        loadTask = Task {
+            do {
+                let (data, _) = try await URLSession.shared.data(from: url)
+                guard !Task.isCancelled else { return }
+                let image = UIImage(data: data)
+                if let image {
+                    ImageCache.shared.insertImage(image, for: url)
                 }
+                await MainActor.run { completion(image) }
+            } catch {
+                await MainActor.run { completion(nil) }
+                handleImageLoadingError(error)
             }
+        }
+    }
+    
+    private func handleImageLoadingError(_ error: Error) {
+        guard let urlError = error as? URLError else {
+            print("Unknown artwork loading error: \(error)")
+            return
+        }
+        switch urlError.code {
+        case .cancelled:
+            print("Artwork loading cancelled.")
+        default:
+            print("Artwork loading error: \(error)")
         }
     }
 
