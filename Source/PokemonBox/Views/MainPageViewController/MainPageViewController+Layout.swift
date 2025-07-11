@@ -45,6 +45,7 @@ extension MainPageViewController {
         pokemonTableView.allowsSelection = false
         pokemonTableView.showsVerticalScrollIndicator = false
         pokemonTableView.tableHeaderView = UIView(frame: .zero)
+        pokemonTableView.separatorInset = UIEdgeInsets(top: 0, left: Layout.horizontalInset, bottom: 0, right: Layout.horizontalInset)
 
         loadingSpinner.translatesAutoresizingMaskIntoConstraints = false
         loadingFooter.addSubview(loadingSpinner)
@@ -63,8 +64,8 @@ extension MainPageViewController {
         NSLayoutConstraint.activate([
             pokemonTableView.topAnchor.constraint(equalTo: view.topAnchor),
             pokemonTableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            pokemonTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Layout.horizontalInset),
-            pokemonTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.horizontalInset)
+            pokemonTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            pokemonTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
         ])
     }
 

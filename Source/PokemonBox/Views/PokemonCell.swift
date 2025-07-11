@@ -35,6 +35,11 @@ class PokemonCell: UITableViewCell {
         artworkImageView.image = nil
         spinner.startAnimating()
     }
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        contentView.layoutMargins = UIEdgeInsets(top: 0, left: Layout.horizontalInset, bottom: 0, right:  Layout.horizontalInset)
+    }
 
     /// Configures the cell with data from a view model.
     /// - Parameter viewModel: The view model containing the Pokémon's information.
@@ -85,7 +90,7 @@ private extension PokemonCell {
 
     func setupConstraints() {
         NSLayoutConstraint.activate([
-            artworkImageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: Layout.cellImageLeading),
+            artworkImageView.leadingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.leadingAnchor),
             artworkImageView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: Layout.cellInset),
             artworkImageView.widthAnchor.constraint(equalToConstant: Layout.cellImageSize),
             artworkImageView.heightAnchor.constraint(equalToConstant: Layout.cellImageSize),
@@ -94,7 +99,7 @@ private extension PokemonCell {
 
             nameLabel.leadingAnchor.constraint(equalTo: artworkImageView.trailingAnchor, constant: Layout.horizontalInset),
             nameLabel.topAnchor.constraint(equalTo: artworkImageView.topAnchor),
-            nameLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -Layout.horizontalInset),
+            nameLabel.trailingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.trailingAnchor),
 
             typesStackView.leadingAnchor.constraint(equalTo: nameLabel.leadingAnchor),
             typesStackView.topAnchor.constraint(equalTo: nameLabel.bottomAnchor, constant: Layout.cellElementSpacing),
