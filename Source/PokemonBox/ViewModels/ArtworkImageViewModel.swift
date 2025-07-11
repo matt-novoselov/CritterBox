@@ -29,8 +29,17 @@ final class ArtworkImageViewModel {
                     }
                     await MainActor.run { completion(image) }
                 } catch {
-                    print("Artwork loading error: \(error)")
                     await MainActor.run { completion(nil) }
+                    guard let urlError = error as? URLError else {
+                        print("Unknown artwork loading error: \(error)")
+                        return
+                    }
+                    switch urlError.code {
+                    case .cancelled:
+                        print("Artwork loading cancelled.")
+                    default:
+                        print("Artwork loading error: \(error)")
+                    }
                 }
             }
         }
