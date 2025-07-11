@@ -11,6 +11,6 @@ import Foundation
 struct Pokemon: Decodable {
     let name: String
     let flavorText: String?
-    let types: [String]
+    let types: Set<String>
     let artworkURL: URL?
 }

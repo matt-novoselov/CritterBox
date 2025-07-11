@@ -16,7 +16,7 @@ final class MainPageViewModel {
     // MARK: - State
     var totalCount: Int?
     var nameSet = Set<String>()
-    var typeMap = [String: [String]]()
+    var typeMap = [String: Set<String>]()
     var filteredNames = [String]()
     var searchOffset = 0
     var currentSearchText = ""

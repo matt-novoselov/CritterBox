@@ -10,14 +10,14 @@ import Foundation
 /// ViewModel for configuring a PokemonCell.
 struct PokemonCellViewModel {
     let name: String
-    let types: [String]
+    let types: Set<String>
     let flavorText: String?
     let artworkURL: URL?
     let accessibilityLabel: String
 
     init(pokemon: Pokemon) {
         name = pokemon.name.capitalized
-        types = pokemon.types.map { $0.capitalized }
+        types = Set( pokemon.types.map { $0.capitalized } )
         flavorText = pokemon.flavorText
         artworkURL = pokemon.artworkURL
 

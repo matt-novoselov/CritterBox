@@ -33,12 +33,12 @@ extension PokemonService {
     }
 
     /// Fetches all Pokémon grouped by type name.
-    func fetchPokemonTypeMap() async throws -> [String: [String]] {
+    func fetchPokemonTypeMap() async throws -> [String: Set<String>] {
         let list: PokemonTypeListResponse = try await request(
             PokemonTypeListResponse.self,
             from: .typeList
         )
-        var map = [String: [String]]()
+        var map = [String:Set<String>]()
         try await withThrowingTaskGroup(of: (String, [String]).self) { group in
             for entry in list.results {
                 group.addTask {
@@ -51,7 +51,7 @@ extension PokemonService {
                 }
             }
             for try await (type, names) in group {
-                map[type] = names
+                map[type] = Set(names)
             }
         }
         return map
