@@ -15,6 +15,10 @@ class PokemonCell: UITableViewCell {
     private let nameLabel = UILabel()
     private let typesStackView = UIStackView()
     private let flavorLabel = UILabel()
+    
+    // Stack views for layout
+    private let mainStackView = UIStackView()
+    private let rightStackView = UIStackView()
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -72,31 +76,36 @@ private extension PokemonCell {
     func setupViews() {
         selectionStyle = .none
 
-        [artworkView, nameLabel, typesStackView, flavorLabel].forEach {
-            $0.translatesAutoresizingMaskIntoConstraints = false
-            contentView.addSubview($0)
-        }
+        // Configure right stack view for vertical layout of labels
+        rightStackView.axis = .vertical
+        rightStackView.spacing = Layout.cellElementSpacing
+        rightStackView.alignment = .leading
+        rightStackView.addArrangedSubview(nameLabel)
+        rightStackView.addArrangedSubview(typesStackView)
+        rightStackView.addArrangedSubview(flavorLabel)
+
+        // Configure main stack view for horizontal layout of image and right stack
+        mainStackView.axis = .horizontal
+        mainStackView.spacing = Layout.horizontalInset
+        mainStackView.alignment = .top
+        mainStackView.addArrangedSubview(artworkView)
+        mainStackView.addArrangedSubview(rightStackView)
+        
+        mainStackView.translatesAutoresizingMaskIntoConstraints = false
+        contentView.addSubview(mainStackView)
     }
 
     func setupConstraints() {
         NSLayoutConstraint.activate([
-            artworkView.leadingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.leadingAnchor),
-            artworkView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: Layout.cellInset),
+            // Keep image view at a fixed size
             artworkView.widthAnchor.constraint(equalToConstant: Layout.cellImageSize),
             artworkView.heightAnchor.constraint(equalToConstant: Layout.cellImageSize),
-
-            nameLabel.leadingAnchor.constraint(equalTo: artworkView.trailingAnchor, constant: Layout.horizontalInset),
-            nameLabel.topAnchor.constraint(equalTo: artworkView.topAnchor),
-            nameLabel.trailingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.trailingAnchor, constant: -Layout.horizontalInset),
-
-            typesStackView.leadingAnchor.constraint(equalTo: nameLabel.leadingAnchor),
-            typesStackView.topAnchor.constraint(equalTo: nameLabel.bottomAnchor, constant: Layout.cellElementSpacing),
-            typesStackView.trailingAnchor.constraint(lessThanOrEqualTo: nameLabel.trailingAnchor),
-
-            flavorLabel.leadingAnchor.constraint(equalTo: nameLabel.leadingAnchor),
-            flavorLabel.topAnchor.constraint(equalTo: typesStackView.bottomAnchor, constant: Layout.cellElementSpacing),
-            flavorLabel.trailingAnchor.constraint(equalTo: nameLabel.trailingAnchor),
-            flavorLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -Layout.cellInset)
+            
+            // Pin main stack view to the content view's margins with vertical insets
+            mainStackView.leadingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.leadingAnchor),
+            mainStackView.trailingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.trailingAnchor),
+            mainStackView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: Layout.cellInset),
+            mainStackView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -Layout.cellInset)
         ])
     }
 
