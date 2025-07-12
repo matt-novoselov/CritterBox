@@ -13,33 +13,31 @@ final class UnavailableView: UIView {
 
     // MARK: - UI Components
     private lazy var imageView: UIImageView = {
-        let imageView = UIImageView(image: UIImage(resource: .silhouettePlaceholder))
-        imageView.translatesAutoresizingMaskIntoConstraints = false
-        imageView.contentMode = .scaleAspectFit
-        imageView.alpha = 0.3
-        imageView.isAccessibilityElement = false
-        return imageView
-    }()
+        $0.image = UIImage(resource: .silhouettePlaceholder)
+        $0.translatesAutoresizingMaskIntoConstraints = false
+        $0.contentMode = .scaleAspectFit
+        $0.alpha = 0.3
+        $0.isAccessibilityElement = false
+        return $0
+    }(UIImageView())
 
     private lazy var titleLabel: UILabel = {
-        let label = UILabel()
-        label.font = UIFont.bricolageGrotesque(ofSize: 22, weight: .bold)
-        label.textAlignment = .center
-        label.isAccessibilityElement = true
-        label.accessibilityTraits = .header
-        return label
-    }()
+        $0.font = UIFont.bricolageGrotesque(ofSize: 22, weight: .bold)
+        $0.textAlignment = .center
+        $0.isAccessibilityElement = true
+        $0.accessibilityTraits = .header
+        return $0
+    }(UILabel())
 
     private lazy var messageLabel: UILabel = {
-        let label = UILabel()
-        label.font = .preferredFont(forTextStyle: .body)
-        label.textColor = .secondaryLabel
-        label.numberOfLines = 0
-        label.textAlignment = .center
-        label.isAccessibilityElement = true
-        label.accessibilityTraits = .staticText
-        return label
-    }()
+        $0.font = .preferredFont(forTextStyle: .body)
+        $0.textColor = .secondaryLabel
+        $0.numberOfLines = 0
+        $0.textAlignment = .center
+        $0.isAccessibilityElement = true
+        $0.accessibilityTraits = .staticText
+        return $0
+    }(UILabel())
 
     private lazy var stackView: UIStackView = {
         let stack = UIStackView(arrangedSubviews: [imageView, titleLabel, messageLabel])
