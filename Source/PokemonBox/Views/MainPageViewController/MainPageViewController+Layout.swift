@@ -10,21 +10,8 @@ import UIKit
 extension MainPageViewController {
     /// Configures navigation bar title and search controller.
     func setupNavigationBar() {
-        let pokemonLabel = UILabel()
-        pokemonLabel.text = "Pokemon"
-        pokemonLabel.font = UIFont.bricolageGrotesque(ofSize: 26, weight: .regular)
-        let boxLabel = UILabel()
-        boxLabel.text = "Box"
-        boxLabel.font = UIFont.bricolageGrotesque(ofSize: 26, weight: .bold)
-
-        let titleStack = UIStackView(arrangedSubviews: [pokemonLabel, boxLabel])
-        navigationItem.titleView = titleStack
-
-        titleStack.isAccessibilityElement = true
-        titleStack.accessibilityTraits = .header
-        titleStack.accessibilityLabel = "PokemonBox"
-        pokemonLabel.isAccessibilityElement = false
-        boxLabel.isAccessibilityElement = false
+        let pokemonBoxTitle = TitleView()
+        navigationItem.titleView = pokemonBoxTitle
 
         searchController.searchBar.placeholder = "Search name or type"
         navigationItem.searchController = searchController
