@@ -11,15 +11,41 @@ import UIKit
 class PokemonCell: UITableViewCell {
     static let reuseIdentifier = "PokemonCell"
 
-    private let artworkView = ArtworkImageView()
-    private let nameLabel = UILabel()
-    private let typesStackView = UIStackView()
-    private let flavorLabel = UILabel()
+    // MARK: - UI Components
+    private lazy var artworkView = ArtworkImageView()
     
-    // Stack views for layout
-    private let horizontalStackView = UIStackView()
-    private let verticalStackView = UIStackView()
+    private lazy var nameLabel = UILabel()
 
+    private lazy var typesStackView: UIStackView = {
+        $0.spacing = Layout.cellElementSpacing
+        return $0
+    }(UIStackView())
+
+    private lazy var flavorLabel: UILabel = {
+        $0.font = .preferredFont(forTextStyle: .body)
+        $0.textColor = .secondaryLabel
+        $0.numberOfLines = 0
+        return $0
+    }(UILabel())
+    
+    private lazy var verticalStackView: UIStackView = {
+        let stack = UIStackView(arrangedSubviews: [nameLabel, typesStackView, flavorLabel])
+        stack.axis = .vertical
+        stack.spacing = Layout.cellElementSpacing
+        stack.alignment = .leading
+        return stack
+    }()
+
+    private lazy var horizontalStackView: UIStackView = {
+        let stack = UIStackView(arrangedSubviews: [artworkView, verticalStackView])
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        stack.axis = .horizontal
+        stack.spacing = Layout.horizontalInset
+        stack.alignment = .top
+        return stack
+    }()
+
+    // MARK: - Initializers
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         setupViews()
@@ -30,6 +56,7 @@ class PokemonCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
 
+    // MARK: - Lifecycle
     override func prepareForReuse() {
         super.prepareForReuse()
         artworkView.prepareForReuse()
@@ -40,20 +67,19 @@ class PokemonCell: UITableViewCell {
         contentView.layoutMargins = UIEdgeInsets(top: 0, left: Layout.horizontalInset, bottom: 0, right:  Layout.horizontalInset)
     }
 
+    // MARK: - Public Methods
     /// Configures the cell with data from a view model.
     /// - Parameter viewModel: The view model containing the Pokémon's information.
     func configure(with viewModel: PokemonCellViewModel) {
         nameLabel.text = viewModel.name
         let headline = UIFont.preferredFont(forTextStyle: .headline)
         nameLabel.font = UIFont.bricolageGrotesque(ofSize: headline.pointSize, weight: .bold)
+        
         flavorLabel.text = viewModel.flavorText
-        flavorLabel.font = .preferredFont(forTextStyle: .body)
-        flavorLabel.textColor = .secondaryLabel
-        flavorLabel.numberOfLines = 0
+        
         isAccessibilityElement = true
         accessibilityLabel = viewModel.accessibilityLabel
 
-        typesStackView.spacing = Layout.cellElementSpacing
         typesStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
         for type in viewModel.types {
             let label = PaddingLabel()
@@ -75,23 +101,6 @@ class PokemonCell: UITableViewCell {
 private extension PokemonCell {
     func setupViews() {
         selectionStyle = .none
-
-        // Configure vertical stack view for vertical layout of labels
-        verticalStackView.axis = .vertical
-        verticalStackView.spacing = Layout.cellElementSpacing
-        verticalStackView.alignment = .leading
-        verticalStackView.addArrangedSubview(nameLabel)
-        verticalStackView.addArrangedSubview(typesStackView)
-        verticalStackView.addArrangedSubview(flavorLabel)
-
-        // Configure horizontal stack view for horizontal layout of image and vertical stack
-        horizontalStackView.axis = .horizontal
-        horizontalStackView.spacing = Layout.horizontalInset
-        horizontalStackView.alignment = .top
-        horizontalStackView.addArrangedSubview(artworkView)
-        horizontalStackView.addArrangedSubview(verticalStackView)
-        
-        horizontalStackView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(horizontalStackView)
     }
 
