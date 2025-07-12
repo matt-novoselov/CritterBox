@@ -33,11 +33,11 @@ final class ArtworkImageView: UIView {
     /// - Parameter url: The image URL.
     func loadImage(from url: URL?) {
         spinner.startAnimating()
-        viewModel.load(url: url) { [weak self] image in
-            DispatchQueue.main.async {
-                self?.imageView.image = image
-                self?.spinner.stopAnimating()
-            }
+        
+        Task {
+            let image = await viewModel.loadImage(from: url)
+            self.imageView.image = image
+            self.spinner.stopAnimating()
         }
     }
 
