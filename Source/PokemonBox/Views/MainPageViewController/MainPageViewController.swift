@@ -23,9 +23,7 @@ class MainPageViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
 
-        setupNavigationBar()
-        setupTableView()
-        setupUnavailableView()
+        setupLayout()
         bindViewModel()
         viewModel.refresh()
     }
