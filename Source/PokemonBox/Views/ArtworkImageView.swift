@@ -2,22 +2,33 @@ import UIKit
 
 /// A view that asynchronously loads and displays a Pokémon artwork image.
 final class ArtworkImageView: UIView {
-    private let imageView = UIImageView()
-    private let spinner = UIActivityIndicatorView(style: .large)
+
+    // MARK: - UI Components
+    private lazy var imageView: UIImageView = {
+        $0.translatesAutoresizingMaskIntoConstraints = false
+        $0.contentMode = .scaleAspectFit
+        return $0
+    }(UIImageView())
+
+    private lazy var spinner: UIActivityIndicatorView = {
+        $0.translatesAutoresizingMaskIntoConstraints = false
+        return $0
+    }(UIActivityIndicatorView(style: .large))
+
     private let viewModel = ArtworkImageViewModel()
 
+    // MARK: - Initializers
     override init(frame: CGRect) {
         super.init(frame: frame)
-        setupViews()
-        setupConstraints()
+        setupView()
     }
 
     required init?(coder: NSCoder) {
         super.init(coder: coder)
-        setupViews()
-        setupConstraints()
+        setupView()
     }
 
+    // MARK: - Public Methods
     /// Begins loading an image from the given URL.
     /// - Parameter url: The image URL.
     func loadImage(from url: URL?) {
@@ -36,20 +47,13 @@ final class ArtworkImageView: UIView {
         imageView.image = nil
         spinner.startAnimating()
     }
-}
-
-private extension ArtworkImageView {
-    func setupViews() {
+    
+    // MARK: - Private Setup
+    private func setupView() {
         translatesAutoresizingMaskIntoConstraints = false
-        imageView.translatesAutoresizingMaskIntoConstraints = false
-        imageView.contentMode = .scaleAspectFit
         addSubview(imageView)
-
-        spinner.translatesAutoresizingMaskIntoConstraints = false
         addSubview(spinner)
-    }
 
-    func setupConstraints() {
         NSLayoutConstraint.activate([
             imageView.leadingAnchor.constraint(equalTo: leadingAnchor),
             imageView.topAnchor.constraint(equalTo: topAnchor),
