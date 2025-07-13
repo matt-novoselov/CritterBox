@@ -1,4 +1,4 @@
- //
+//
 //  PokemonService+Detail.swift
 //  PokemonBox
 //
@@ -36,7 +36,7 @@ extension PokemonService {
             }
             flavor = text
         }
-        let types = Set( detail.types.map { $0.type.name } )
+        let types = Set( detail.types.map { $0.type.name })
         let artwork = detail.sprites.other.officialArtwork.frontDefault
         return Pokemon(name: detail.name,
                        flavorText: flavor,

@@ -33,7 +33,7 @@ final class ArtworkImageView: UIView {
     /// - Parameter url: The image URL.
     func loadImage(from url: URL?) {
         spinner.startAnimating()
-        
+
         Task {
             let image = await viewModel.loadImage(from: url)
             self.imageView.image = image
@@ -47,7 +47,7 @@ final class ArtworkImageView: UIView {
         imageView.image = nil
         spinner.startAnimating()
     }
-    
+
     // MARK: - Private Setup
     private func setupView() {
         translatesAutoresizingMaskIntoConstraints = false

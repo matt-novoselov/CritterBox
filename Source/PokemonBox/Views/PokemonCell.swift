@@ -13,7 +13,7 @@ class PokemonCell: UITableViewCell {
 
     // MARK: - UI Components
     private lazy var artworkView = ArtworkImageView()
-    
+
     private lazy var nameLabel = UILabel()
 
     private lazy var typesStackView: UIStackView = {
@@ -27,7 +27,7 @@ class PokemonCell: UITableViewCell {
         $0.numberOfLines = 0
         return $0
     }(UILabel())
-    
+
     private lazy var verticalStackView: UIStackView = {
         let stack = UIStackView(arrangedSubviews: [nameLabel, typesStackView, flavorLabel])
         stack.axis = .vertical
@@ -61,10 +61,10 @@ class PokemonCell: UITableViewCell {
         super.prepareForReuse()
         artworkView.prepareForReuse()
     }
-    
+
     override func layoutSubviews() {
         super.layoutSubviews()
-        contentView.layoutMargins = UIEdgeInsets(top: 0, left: Layout.horizontalInset, bottom: 0, right:  Layout.horizontalInset)
+        contentView.layoutMargins = UIEdgeInsets(top: 0, left: Layout.horizontalInset, bottom: 0, right: Layout.horizontalInset)
     }
 
     // MARK: - Public Methods
@@ -74,9 +74,9 @@ class PokemonCell: UITableViewCell {
         nameLabel.text = viewModel.name
         let headline = UIFont.preferredFont(forTextStyle: .headline)
         nameLabel.font = UIFont.bricolageGrotesque(ofSize: headline.pointSize, weight: .bold)
-        
+
         flavorLabel.text = viewModel.flavorText
-        
+
         isAccessibilityElement = true
         accessibilityLabel = viewModel.accessibilityLabel
 
@@ -109,7 +109,7 @@ private extension PokemonCell {
             // Keep image view at a fixed size
             artworkView.widthAnchor.constraint(equalToConstant: Layout.cellImageSize),
             artworkView.heightAnchor.constraint(equalToConstant: Layout.cellImageSize),
-            
+
             // Pin horizontal stack view to the content view's margins with vertical insets
             horizontalStackView.leadingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.leadingAnchor),
             horizontalStackView.trailingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.trailingAnchor),

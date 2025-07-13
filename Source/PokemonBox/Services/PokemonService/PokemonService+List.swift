@@ -38,7 +38,7 @@ extension PokemonService {
             PokemonTypeListResponse.self,
             from: .typeList
         )
-        var map = [String:Set<String>]()
+        var map = [String: Set<String>]()
         try await withThrowingTaskGroup(of: (String, [String]).self) { group in
             for entry in list.results {
                 group.addTask {

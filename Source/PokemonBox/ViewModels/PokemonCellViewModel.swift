@@ -17,7 +17,7 @@ struct PokemonCellViewModel {
 
     init(pokemon: Pokemon) {
         name = pokemon.name.capitalized
-        types = Set( pokemon.types.map { $0.capitalized } )
+        types = Set( pokemon.types.map { $0.capitalized })
         flavorText = pokemon.flavorText
         artworkURL = pokemon.artworkURL
 
