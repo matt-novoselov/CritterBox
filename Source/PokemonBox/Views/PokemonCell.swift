@@ -41,7 +41,7 @@ class PokemonCell: UITableViewCell {
         stack.translatesAutoresizingMaskIntoConstraints = false
         stack.axis = .horizontal
         stack.spacing = Layout.horizontalInset
-        stack.alignment = .top
+        stack.alignment = .center
         return stack
     }()
 
