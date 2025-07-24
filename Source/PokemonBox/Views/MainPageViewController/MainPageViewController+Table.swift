@@ -10,11 +10,11 @@ import UIKit
 // MARK: - UITableViewDataSource
 extension MainPageViewController: UITableViewDataSource {
     func numberOfSections(in tableView: UITableView) -> Int {
-        return pokemons.count
+        return 1
     }
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 1
+        return pokemons.count
     }
 
     func tableView(_ tableView: UITableView,
@@ -23,7 +23,7 @@ extension MainPageViewController: UITableViewDataSource {
             withIdentifier: PokemonCell.reuseIdentifier,
             for: indexPath
         ) as! PokemonCell
-        let cellViewModel = PokemonCellViewModel(pokemon: pokemons[indexPath.section])
+        let cellViewModel = PokemonCellViewModel(pokemon: pokemons[indexPath.row])
         cell.configure(with: cellViewModel)
         return cell
     }
@@ -45,7 +45,7 @@ extension MainPageViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView,
                    willDisplay cell: UITableViewCell,
                    forRowAt indexPath: IndexPath) {
-        if indexPath.section == pokemons.count - 4 {
+        if indexPath.row == pokemons.count - 4 {
             viewModel.loadNextPage()
         }
     }
